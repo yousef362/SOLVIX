@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Project Path="../A__Lyer/A_Lyer.csproj" />
+  <Project Path="../B__Lyer/B__Lyer.csproj" />
+  <Project Path="SOLVIX.csproj" />
+</Solution>

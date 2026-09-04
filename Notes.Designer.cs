@@ -9,6 +9,7 @@ namespace SOLVIX
         private System.ComponentModel.IContainer components = null;
 
         private Panel mainPanel;
+
         private Panel headerPanel;
         private Panel headerAccent;
         private Label titleLabel;
@@ -25,15 +26,16 @@ namespace SOLVIX
         private Solvix.UI.StatCard todayCard;
 
         private Panel contentPanel;
-        private Solvix.UI.RoundedPanel listPanel;
-        private Solvix.UI.RoundedPanel detailPanel;
 
+        private Solvix.UI.RoundedPanel listPanel;
         private Panel listHeaderPanel;
         private Panel listAccent;
         private Label listTitleLabel;
         private Label listCountLabel;
         private Solvix.UI.OutlineButton filterButton;
         private Panel notesScrollPanel;
+
+        private Solvix.UI.RoundedPanel detailPanel;
 
         private Panel detailHeaderPanel;
         private Panel detailAccent;
@@ -47,6 +49,7 @@ namespace SOLVIX
         private Label detailTitleLabel;
         private Label detailDateLabel;
         private Label detailContentLabel;
+
         private Solvix.UI.RoundedPanel infoPanel;
         private Label categoryLabel;
         private Label categoryValue;
@@ -57,11 +60,23 @@ namespace SOLVIX
 
         private Panel editorContainer;
         private Label editorHeading;
-        private Solvix.UI.CustomTextBox titleEditBox;
-        private RichTextBox contentEditBox;
+        private Label editorSubHeading;
+
+        private Panel titleFrame;
+        private Label titleCaption;
+        private TextBox titleEditBox;
+
+        private Panel contentFrame;
+        private Label contentCaption;
+        private Notes.DarkRichTextBox contentEditBox;
+
+        private Panel editorBottomPanel;
+
+        private Label categoryCaption;
         private ComboBox categoryCombo;
-        private CheckBox importantCheckBox;
-        private CheckBox pinnedCheckBox;
+        private Notes.DarkCheckBox importantCheckBox;
+        private Notes.DarkCheckBox pinnedCheckBox;
+
         private Solvix.UI.CustomButton saveButton;
         private Solvix.UI.OutlineButton cancelButton;
 
@@ -75,9 +90,11 @@ namespace SOLVIX
 
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            components =
+                new System.ComponentModel.Container();
 
             mainPanel = new Panel();
+
             headerPanel = new Panel();
             headerAccent = new Panel();
             titleLabel = new Label();
@@ -94,9 +111,8 @@ namespace SOLVIX
             todayCard = new Solvix.UI.StatCard();
 
             contentPanel = new Panel();
-            listPanel = new Solvix.UI.RoundedPanel();
-            detailPanel = new Solvix.UI.RoundedPanel();
 
+            listPanel = new Solvix.UI.RoundedPanel();
             listHeaderPanel = new Panel();
             listAccent = new Panel();
             listTitleLabel = new Label();
@@ -104,9 +120,12 @@ namespace SOLVIX
             filterButton = new Solvix.UI.OutlineButton();
             notesScrollPanel = new Panel();
 
+            detailPanel = new Solvix.UI.RoundedPanel();
+
             detailHeaderPanel = new Panel();
             detailAccent = new Panel();
             detailHeaderLabel = new Label();
+
             pinButton = new Solvix.UI.IconButton();
             editButton = new Solvix.UI.IconButton();
             deleteButton = new Solvix.UI.IconButton();
@@ -116,23 +135,49 @@ namespace SOLVIX
             detailTitleLabel = new Label();
             detailDateLabel = new Label();
             detailContentLabel = new Label();
+
             infoPanel = new Solvix.UI.RoundedPanel();
+
             categoryLabel = new Label();
             categoryValue = new Label();
+
             createdLabel = new Label();
             createdValue = new Label();
+
             updatedLabel = new Label();
             updatedValue = new Label();
 
             editorContainer = new Panel();
             editorHeading = new Label();
-            titleEditBox = new Solvix.UI.CustomTextBox();
-            contentEditBox = new RichTextBox();
+            editorSubHeading = new Label();
+
+            titleFrame = new Panel();
+            titleCaption = new Label();
+            titleEditBox = new TextBox();
+
+            contentFrame = new Panel();
+            contentCaption = new Label();
+
+            contentEditBox =
+                new Notes.DarkRichTextBox();
+
+            editorBottomPanel = new Panel();
+
+            categoryCaption = new Label();
+
             categoryCombo = new ComboBox();
-            importantCheckBox = new CheckBox();
-            pinnedCheckBox = new CheckBox();
-            saveButton = new Solvix.UI.CustomButton();
-            cancelButton = new Solvix.UI.OutlineButton();
+
+            importantCheckBox =
+                new Notes.DarkCheckBox();
+
+            pinnedCheckBox =
+                new Notes.DarkCheckBox();
+
+            saveButton =
+                new Solvix.UI.CustomButton();
+
+            cancelButton =
+                new Solvix.UI.OutlineButton();
 
             SuspendLayout();
 
@@ -140,18 +185,34 @@ namespace SOLVIX
             // MAIN
             // =========================================================
 
-            mainPanel.Dock = DockStyle.Fill;
-            mainPanel.BackColor = Solvix.UI.AppTheme.Background;
-            mainPanel.Padding = new Padding(28, 24, 28, 24);
-            mainPanel.RightToLeft = RightToLeft.Yes;
+            mainPanel.Dock =
+                DockStyle.Fill;
+
+            mainPanel.BackColor =
+                Solvix.UI.AppTheme.Background;
+
+            mainPanel.Padding =
+                new Padding(
+                    30,
+                    24,
+                    30,
+                    24);
+
+            mainPanel.RightToLeft =
+                RightToLeft.Yes;
 
             // =========================================================
             // HEADER
             // =========================================================
 
-            headerPanel.Dock = DockStyle.Top;
-            headerPanel.Height = 86;
-            headerPanel.BackColor = Color.Transparent;
+            headerPanel.Dock =
+                DockStyle.Top;
+
+            headerPanel.Height =
+                82;
+
+            headerPanel.BackColor =
+                Color.Transparent;
 
             headerAccent.Anchor =
                 AnchorStyles.Top |
@@ -160,23 +221,36 @@ namespace SOLVIX
             headerAccent.BackColor =
                 Solvix.UI.AppTheme.Primary;
 
-            headerAccent.Size =
-                new Size(5, 58);
+            headerAccent.Width =
+                4;
 
-            headerAccent.Location =
-                new Point(0, 4);
+            headerAccent.Height =
+                56;
+
+            headerAccent.Left =
+                0;
+
+            headerAccent.Top =
+                2;
 
             titleLabel.Anchor =
                 AnchorStyles.Top |
                 AnchorStyles.Right;
 
-            titleLabel.AutoSize = false;
+            titleLabel.AutoSize =
+                false;
 
-            titleLabel.Size =
-                new Size(340, 42);
+            titleLabel.Width =
+                360;
 
-            titleLabel.Location =
-                new Point(34, 0);
+            titleLabel.Height =
+                40;
+
+            titleLabel.Top =
+                0;
+
+            titleLabel.Left =
+                18;
 
             titleLabel.Font =
                 Solvix.UI.AppTheme.Bold(23F);
@@ -197,13 +271,20 @@ namespace SOLVIX
                 AnchorStyles.Top |
                 AnchorStyles.Right;
 
-            subtitleLabel.AutoSize = false;
+            subtitleLabel.AutoSize =
+                false;
 
-            subtitleLabel.Size =
-                new Size(470, 28);
+            subtitleLabel.Width =
+                440;
 
-            subtitleLabel.Location =
-                new Point(34, 44);
+            subtitleLabel.Height =
+                26;
+
+            subtitleLabel.Top =
+                42;
+
+            subtitleLabel.Left =
+                18;
 
             subtitleLabel.Font =
                 Solvix.UI.AppTheme.Regular(9F);
@@ -212,7 +293,7 @@ namespace SOLVIX
                 Solvix.UI.AppTheme.MutedText;
 
             subtitleLabel.Text =
-                "إدارة الملاحظات ومتابعتها من مكان واحد.";
+                "إدارة ملاحظاتك وتنظيم أفكارك من مكان واحد.";
 
             subtitleLabel.TextAlign =
                 ContentAlignment.MiddleRight;
@@ -220,9 +301,14 @@ namespace SOLVIX
             subtitleLabel.RightToLeft =
                 RightToLeft.Yes;
 
-            headerPanel.Controls.Add(headerAccent);
-            headerPanel.Controls.Add(titleLabel);
-            headerPanel.Controls.Add(subtitleLabel);
+            headerPanel.Controls.Add(
+                headerAccent);
+
+            headerPanel.Controls.Add(
+                subtitleLabel);
+
+            headerPanel.Controls.Add(
+                titleLabel);
 
             // =========================================================
             // TOOLBAR
@@ -232,36 +318,23 @@ namespace SOLVIX
                 DockStyle.Top;
 
             toolbarPanel.Height =
-                64;
+                58;
 
             toolbarPanel.BackColor =
                 Color.Transparent;
 
-            searchBox.Size =
-                new Size(420, 44);
-
-            searchBox.Location =
-                new Point(0, 8);
-
-            searchBox.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Right;
-
-            searchBox.PlaceholderText =
-                "ابحث في الملاحظات...";
-
-            searchBox.RightToLeft =
-                RightToLeft.Yes;
-
-            addNoteButton.Size =
-                new Size(188, 44);
-
-            addNoteButton.Location =
-                new Point(0, 8);
-
             addNoteButton.Anchor =
                 AnchorStyles.Top |
                 AnchorStyles.Right;
+
+            addNoteButton.Width =
+                182;
+
+            addNoteButton.Height =
+                44;
+
+            addNoteButton.Top =
+                5;
 
             addNoteButton.Text =
                 "إضافة ملاحظة";
@@ -269,21 +342,44 @@ namespace SOLVIX
             addNoteButton.Font =
                 Solvix.UI.AppTheme.Bold(9.5F);
 
-            toolbarPanel.Controls.Add(addNoteButton);
-            toolbarPanel.Controls.Add(searchBox);
+            searchBox.Anchor =
+                AnchorStyles.Top |
+                AnchorStyles.Right;
+
+            searchBox.Width =
+                390;
+
+            searchBox.Height =
+                44;
+
+            searchBox.Top =
+                5;
+
+            searchBox.PlaceholderText =
+                "ابحث في الملاحظات...";
+
+            searchBox.RightToLeft =
+                RightToLeft.Yes;
+
+            toolbarPanel.Controls.Add(
+                addNoteButton);
+
+            toolbarPanel.Controls.Add(
+                searchBox);
 
             toolbarPanel.Resize += (_, _) =>
             {
-                int right =
+                int width =
                     toolbarPanel.ClientSize.Width;
 
                 addNoteButton.Left =
-                    right - addNoteButton.Width;
+                    width -
+                    addNoteButton.Width;
 
                 searchBox.Left =
-                    addNoteButton.Left
-                    - searchBox.Width
-                    - 14;
+                    addNoteButton.Left -
+                    searchBox.Width -
+                    12;
             };
 
             // =========================================================
@@ -294,13 +390,10 @@ namespace SOLVIX
                 DockStyle.Top;
 
             statsPanel.Height =
-                112;
+                108;
 
             statsPanel.BackColor =
                 Color.Transparent;
-
-            statsPanel.Padding =
-                new Padding(0, 6, 0, 8);
 
             ConfigureStat(
                 totalCard,
@@ -314,21 +407,21 @@ namespace SOLVIX
                 "ملاحظات مهمة",
                 "0",
                 "تحتاج انتباهك",
-                Solvix.UI.AppTheme.PrimaryHover);
+                Solvix.UI.AppTheme.Warning);
 
             ConfigureStat(
                 pinnedCard,
                 "المثبتة",
                 "0",
-                "تظهر في الأعلى",
-                Solvix.UI.AppTheme.Primary);
+                "تظهر في أعلى القائمة",
+                Solvix.UI.AppTheme.PrimaryHover);
 
             ConfigureStat(
                 todayCard,
                 "ملاحظات اليوم",
                 "0",
-                "تم تعديلها أو إضافتها اليوم",
-                Solvix.UI.AppTheme.Warning);
+                "تمت إضافتها أو تعديلها اليوم",
+                Solvix.UI.AppTheme.Success);
 
             statsPanel.Controls.Add(todayCard);
             statsPanel.Controls.Add(pinnedCard);
@@ -349,10 +442,14 @@ namespace SOLVIX
                 Color.Transparent;
 
             contentPanel.Padding =
-                new Padding(0, 8, 0, 0);
+                new Padding(
+                    0,
+                    10,
+                    0,
+                    0);
 
             // =========================================================
-            // LIST PANEL
+            // LIST
             // =========================================================
 
             listPanel.Dock =
@@ -362,7 +459,10 @@ namespace SOLVIX
                 430;
 
             listPanel.FillColor =
-                Color.FromArgb(11, 20, 33);
+                Color.FromArgb(
+                    10,
+                    20,
+                    33);
 
             listPanel.BorderColor =
                 Solvix.UI.AppTheme.Border;
@@ -373,10 +473,6 @@ namespace SOLVIX
             listPanel.CornerRadius =
                 15;
 
-            // ---------------------------------------------------------
-            // LIST HEADER
-            // ---------------------------------------------------------
-
             listHeaderPanel.Dock =
                 DockStyle.Top;
 
@@ -384,7 +480,10 @@ namespace SOLVIX
                 78;
 
             listHeaderPanel.BackColor =
-                Color.FromArgb(14, 27, 45);
+                Color.FromArgb(
+                    14,
+                    28,
+                    47);
 
             listHeaderPanel.RightToLeft =
                 RightToLeft.Yes;
@@ -398,18 +497,21 @@ namespace SOLVIX
             listAccent.BackColor =
                 Solvix.UI.AppTheme.Primary;
 
-            listTitleLabel.AutoSize =
-                false;
-
             listTitleLabel.Anchor =
                 AnchorStyles.Top |
                 AnchorStyles.Right;
 
-            listTitleLabel.Size =
-                new Size(220, 30);
+            listTitleLabel.AutoSize =
+                false;
 
-            listTitleLabel.Location =
-                new Point(170, 10);
+            listTitleLabel.Width =
+                240;
+
+            listTitleLabel.Height =
+                31;
+
+            listTitleLabel.Top =
+                10;
 
             listTitleLabel.Font =
                 Solvix.UI.AppTheme.Bold(11F);
@@ -426,18 +528,21 @@ namespace SOLVIX
             listTitleLabel.RightToLeft =
                 RightToLeft.Yes;
 
-            listCountLabel.AutoSize =
-                false;
-
             listCountLabel.Anchor =
                 AnchorStyles.Top |
                 AnchorStyles.Right;
 
-            listCountLabel.Size =
-                new Size(220, 24);
+            listCountLabel.AutoSize =
+                false;
 
-            listCountLabel.Location =
-                new Point(170, 40);
+            listCountLabel.Width =
+                240;
+
+            listCountLabel.Height =
+                22;
+
+            listCountLabel.Top =
+                41;
 
             listCountLabel.Font =
                 Solvix.UI.AppTheme.Regular(8F);
@@ -446,7 +551,7 @@ namespace SOLVIX
                 Solvix.UI.AppTheme.MutedText;
 
             listCountLabel.Text =
-                "0 ملاحظات";
+                "لا توجد ملاحظات";
 
             listCountLabel.TextAlign =
                 ContentAlignment.MiddleRight;
@@ -458,11 +563,14 @@ namespace SOLVIX
                 AnchorStyles.Top |
                 AnchorStyles.Left;
 
-            filterButton.Size =
-                new Size(88, 38);
+            filterButton.Width =
+                88;
 
-            filterButton.Location =
-                new Point(18, 20);
+            filterButton.Height =
+                36;
+
+            filterButton.Top =
+                21;
 
             filterButton.Text =
                 "الكل";
@@ -470,56 +578,58 @@ namespace SOLVIX
             filterButton.Font =
                 Solvix.UI.AppTheme.Bold(8.5F);
 
-            listHeaderPanel.Controls.Add(filterButton);
-            listHeaderPanel.Controls.Add(listCountLabel);
-            listHeaderPanel.Controls.Add(listTitleLabel);
-            listHeaderPanel.Controls.Add(listAccent);
+            listHeaderPanel.Controls.Add(
+                filterButton);
+
+            listHeaderPanel.Controls.Add(
+                listCountLabel);
+
+            listHeaderPanel.Controls.Add(
+                listTitleLabel);
+
+            listHeaderPanel.Controls.Add(
+                listAccent);
 
             listHeaderPanel.Resize += (_, _) =>
             {
-                int right =
+                int width =
                     listHeaderPanel.ClientSize.Width;
 
                 listTitleLabel.Left =
-                    right - 242;
+                    width -
+                    listTitleLabel.Width -
+                    18;
 
                 listCountLabel.Left =
-                    right - 242;
-
-                listTitleLabel.Width =
-                    222;
-
-                listCountLabel.Width =
-                    222;
+                    width -
+                    listCountLabel.Width -
+                    18;
 
                 filterButton.Left =
                     18;
-
-                filterButton.Top =
-                    20;
             };
-
-            // ---------------------------------------------------------
-            // NOTES SCROLL
-            // ---------------------------------------------------------
 
             notesScrollPanel.Dock =
                 DockStyle.Fill;
 
             notesScrollPanel.BackColor =
-                Color.FromArgb(7, 14, 24);
+                Color.FromArgb(
+                    7,
+                    14,
+                    24);
 
             notesScrollPanel.AutoScroll =
                 true;
 
             notesScrollPanel.Padding =
-                new Padding(8);
+                new Padding(
+                    8,
+                    8,
+                    8,
+                    12);
 
             notesScrollPanel.RightToLeft =
                 RightToLeft.No;
-
-            notesScrollPanel.AutoSize =
-                false;
 
             listPanel.Controls.Add(
                 notesScrollPanel);
@@ -528,14 +638,17 @@ namespace SOLVIX
                 listHeaderPanel);
 
             // =========================================================
-            // DETAIL PANEL
+            // DETAIL
             // =========================================================
 
             detailPanel.Dock =
                 DockStyle.Fill;
 
             detailPanel.FillColor =
-                Color.FromArgb(14, 24, 39);
+                Color.FromArgb(
+                    13,
+                    24,
+                    39);
 
             detailPanel.BorderColor =
                 Solvix.UI.AppTheme.Border;
@@ -557,7 +670,10 @@ namespace SOLVIX
                 70;
 
             detailHeaderPanel.BackColor =
-                Color.FromArgb(14, 27, 45);
+                Color.FromArgb(
+                    14,
+                    28,
+                    47);
 
             detailHeaderPanel.RightToLeft =
                 RightToLeft.Yes;
@@ -578,11 +694,14 @@ namespace SOLVIX
             detailHeaderLabel.AutoSize =
                 false;
 
-            detailHeaderLabel.Size =
-                new Size(210, 38);
+            detailHeaderLabel.Height =
+                40;
 
-            detailHeaderLabel.Location =
-                new Point(28, 20);
+            detailHeaderLabel.Width =
+                260;
+
+            detailHeaderLabel.Top =
+                17;
 
             detailHeaderLabel.Font =
                 Solvix.UI.AppTheme.Bold(10.5F);
@@ -599,12 +718,10 @@ namespace SOLVIX
             detailHeaderLabel.RightToLeft =
                 RightToLeft.Yes;
 
-            deleteButton.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Right;
-
             deleteButton.Size =
-                new Size(40, 40);
+                new Size(
+                    38,
+                    38);
 
             deleteButton.Text =
                 "⌫";
@@ -612,12 +729,10 @@ namespace SOLVIX
             deleteButton.BackColor =
                 Color.Transparent;
 
-            editButton.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Right;
-
             editButton.Size =
-                new Size(40, 40);
+                new Size(
+                    38,
+                    38);
 
             editButton.Text =
                 "✎";
@@ -625,12 +740,10 @@ namespace SOLVIX
             editButton.BackColor =
                 Color.Transparent;
 
-            pinButton.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Right;
-
             pinButton.Size =
-                new Size(40, 40);
+                new Size(
+                    38,
+                    38);
 
             pinButton.Text =
                 "⚐";
@@ -638,12 +751,10 @@ namespace SOLVIX
             pinButton.BackColor =
                 Color.Transparent;
 
-            noteBadge.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Right;
-
             noteBadge.Size =
-                new Size(76, 28);
+                new Size(
+                    76,
+                    28);
 
             noteBadge.Style =
                 Solvix.UI.BadgeStyle.Primary;
@@ -669,8 +780,50 @@ namespace SOLVIX
             detailHeaderPanel.Controls.Add(
                 detailAccent);
 
-            detailHeaderPanel.Resize +=
-                (_, _) => LayoutDetailHeader();
+            detailHeaderPanel.Resize += (_, _) =>
+            {
+                int width =
+                    detailHeaderPanel.ClientSize.Width;
+
+                deleteButton.Left =
+                    width -
+                    deleteButton.Width -
+                    18;
+
+                deleteButton.Top = 16;
+
+                editButton.Left =
+                    deleteButton.Left -
+                    editButton.Width -
+                    8;
+
+                editButton.Top = 16;
+
+                pinButton.Left =
+                    editButton.Left -
+                    pinButton.Width -
+                    8;
+
+                pinButton.Top = 16;
+
+                noteBadge.Left =
+                    Math.Max(
+                        18,
+                        pinButton.Left -
+                        noteBadge.Width -
+                        12);
+
+                noteBadge.Top = 21;
+
+                detailHeaderLabel.Left =
+                    18;
+
+                detailHeaderLabel.Width =
+                    Math.Max(
+                        180,
+                        noteBadge.Left -
+                        28);
+            };
 
             // =========================================================
             // DISPLAY
@@ -682,17 +835,18 @@ namespace SOLVIX
             displayContainer.BackColor =
                 Color.Transparent;
 
-            displayContainer.Padding =
-                new Padding(0);
-
             detailTitleLabel.Dock =
                 DockStyle.Top;
 
             detailTitleLabel.Height =
-                76;
+                72;
 
             detailTitleLabel.Padding =
-                new Padding(28, 12, 28, 0);
+                new Padding(
+                    28,
+                    12,
+                    28,
+                    0);
 
             detailTitleLabel.Font =
                 Solvix.UI.AppTheme.Bold(20F);
@@ -716,13 +870,17 @@ namespace SOLVIX
                 DockStyle.Top;
 
             detailDateLabel.Height =
-                34;
+                31;
 
             detailDateLabel.Padding =
-                new Padding(28, 0, 28, 0);
+                new Padding(
+                    28,
+                    0,
+                    28,
+                    0);
 
             detailDateLabel.Font =
-                Solvix.UI.AppTheme.Regular(8.5F);
+                Solvix.UI.AppTheme.Regular(8.2F);
 
             detailDateLabel.ForeColor =
                 Solvix.UI.AppTheme.MutedText;
@@ -733,27 +891,66 @@ namespace SOLVIX
             detailDateLabel.RightToLeft =
                 RightToLeft.Yes;
 
-            detailDateLabel.AutoEllipsis =
-                true;
+            detailContentLabel.Dock =
+                DockStyle.Fill;
+
+            detailContentLabel.Padding =
+                new Padding(
+                    28,
+                    20,
+                    28,
+                    18);
+
+            detailContentLabel.Font =
+                Solvix.UI.AppTheme.Regular(10F);
+
+            detailContentLabel.ForeColor =
+                Color.FromArgb(
+                    215,
+                    223,
+                    235);
+
+            detailContentLabel.Text =
+                "اختر ملاحظة من القائمة أو أضف ملاحظة جديدة.";
+
+            detailContentLabel.TextAlign =
+                ContentAlignment.TopRight;
+
+            detailContentLabel.RightToLeft =
+                RightToLeft.Yes;
+
+            detailContentLabel.AutoEllipsis =
+                false;
 
             // =========================================================
-            // INFO PANEL
+            // INFO
             // =========================================================
 
             infoPanel.Dock =
                 DockStyle.Bottom;
 
             infoPanel.Height =
-                114;
+                104;
+
+            infoPanel.Margin =
+                new Padding(
+                    20);
 
             infoPanel.Padding =
-                new Padding(16);
+                new Padding(
+                    16);
 
             infoPanel.FillColor =
-                Color.FromArgb(17, 35, 58);
+                Color.FromArgb(
+                    17,
+                    36,
+                    59);
 
             infoPanel.BorderColor =
-                Color.FromArgb(38, 72, 112);
+                Color.FromArgb(
+                    39,
+                    76,
+                    116);
 
             infoPanel.BorderThickness =
                 1;
@@ -780,50 +977,25 @@ namespace SOLVIX
                 "-");
 
             infoPanel.Controls.Add(
-                updatedValue);
-
-            infoPanel.Controls.Add(
-                updatedLabel);
-
-            infoPanel.Controls.Add(
-                createdValue);
-
-            infoPanel.Controls.Add(
-                createdLabel);
+                categoryLabel);
 
             infoPanel.Controls.Add(
                 categoryValue);
 
             infoPanel.Controls.Add(
-                categoryLabel);
+                createdLabel);
+
+            infoPanel.Controls.Add(
+                createdValue);
+
+            infoPanel.Controls.Add(
+                updatedLabel);
+
+            infoPanel.Controls.Add(
+                updatedValue);
 
             infoPanel.Resize +=
                 (_, _) => LayoutInfoPanel();
-
-            // =========================================================
-            // DETAIL CONTENT
-            // =========================================================
-
-            detailContentLabel.Dock =
-                DockStyle.Fill;
-
-            detailContentLabel.Padding =
-                new Padding(28, 22, 28, 18);
-
-            detailContentLabel.Font =
-                Solvix.UI.AppTheme.Regular(10F);
-
-            detailContentLabel.ForeColor =
-                Color.FromArgb(213, 222, 234);
-
-            detailContentLabel.Text =
-                "اختر ملاحظة من القائمة أو اضغط «إضافة ملاحظة» للبدء.";
-
-            detailContentLabel.TextAlign =
-                ContentAlignment.TopRight;
-
-            detailContentLabel.RightToLeft =
-                RightToLeft.Yes;
 
             displayContainer.Controls.Add(
                 detailContentLabel);
@@ -848,7 +1020,11 @@ namespace SOLVIX
                 Color.Transparent;
 
             editorContainer.Padding =
-                new Padding(24);
+                new Padding(
+                    26,
+                    22,
+                    26,
+                    20);
 
             editorContainer.Visible =
                 false;
@@ -857,16 +1033,16 @@ namespace SOLVIX
                 DockStyle.Top;
 
             editorHeading.Height =
-                44;
+                34;
 
             editorHeading.Font =
-                Solvix.UI.AppTheme.Bold(15F);
+                Solvix.UI.AppTheme.Bold(16F);
 
             editorHeading.ForeColor =
                 Solvix.UI.AppTheme.Text;
 
             editorHeading.Text =
-                "محرر الملاحظة";
+                "إضافة ملاحظة جديدة";
 
             editorHeading.TextAlign =
                 ContentAlignment.MiddleRight;
@@ -874,27 +1050,147 @@ namespace SOLVIX
             editorHeading.RightToLeft =
                 RightToLeft.Yes;
 
-            // ---------------------------------------------------------
-            // TITLE
-            // ---------------------------------------------------------
+            editorSubHeading.Dock =
+                DockStyle.Top;
 
-            titleEditBox.Size =
-                new Size(400, 44);
+            editorSubHeading.Height =
+                27;
 
-            titleEditBox.PlaceholderText =
+            editorSubHeading.Font =
+                Solvix.UI.AppTheme.Regular(8F);
+
+            editorSubHeading.ForeColor =
+                Solvix.UI.AppTheme.MutedText;
+
+            editorSubHeading.Text =
+                "أنشئ ملاحظتك واختَر التصنيف والحالة قبل الحفظ.";
+
+            editorSubHeading.TextAlign =
+                ContentAlignment.MiddleRight;
+
+            editorSubHeading.RightToLeft =
+                RightToLeft.Yes;
+
+            // =========================================================
+            // TITLE FRAME
+            // =========================================================
+
+            titleFrame.Dock =
+                DockStyle.Top;
+
+            titleFrame.Height =
+                70;
+
+            titleFrame.Padding =
+                new Padding(
+                    12,
+                    26,
+                    12,
+                    0);
+
+            titleFrame.BackColor =
+                Solvix.UI.AppTheme.SurfaceAlt;
+
+            titleFrame.BorderStyle =
+                BorderStyle.FixedSingle;
+
+            titleCaption.AutoSize =
+                false;
+
+            titleCaption.Height =
+                22;
+
+            titleCaption.Dock =
+                DockStyle.Top;
+
+            titleCaption.Text =
                 "عنوان الملاحظة";
+
+            titleCaption.Font =
+                Solvix.UI.AppTheme.Bold(8.5F);
+
+            titleCaption.ForeColor =
+                Solvix.UI.AppTheme.MutedText;
+
+            titleCaption.TextAlign =
+                ContentAlignment.MiddleRight;
+
+            titleCaption.RightToLeft =
+                RightToLeft.Yes;
+
+            titleEditBox.Dock =
+                DockStyle.Fill;
+
+            titleEditBox.BorderStyle =
+                BorderStyle.None;
+
+            titleEditBox.BackColor =
+                Solvix.UI.AppTheme.SurfaceAlt;
+
+            titleEditBox.ForeColor =
+                Solvix.UI.AppTheme.Text;
+
+            titleEditBox.Font =
+                Solvix.UI.AppTheme.Bold(10F);
+
+            titleEditBox.TextAlign =
+                HorizontalAlignment.Right;
 
             titleEditBox.RightToLeft =
                 RightToLeft.Yes;
 
-            titleEditBox.Anchor =
-                AnchorStyles.Top |
-                AnchorStyles.Left |
-                AnchorStyles.Right;
+            titleEditBox.Multiline =
+                false;
 
-            // ---------------------------------------------------------
-            // CONTENT
-            // ---------------------------------------------------------
+            titleFrame.Controls.Add(
+                titleEditBox);
+
+            titleFrame.Controls.Add(
+                titleCaption);
+
+            // =========================================================
+            // CONTENT FRAME
+            // =========================================================
+
+            contentFrame.Dock =
+                DockStyle.Fill;
+
+            contentFrame.Padding =
+                new Padding(
+                    12,
+                    29,
+                    12,
+                    10);
+
+            contentFrame.BackColor =
+                Solvix.UI.AppTheme.SurfaceAlt;
+
+            contentFrame.BorderStyle =
+                BorderStyle.FixedSingle;
+
+            contentCaption.Dock =
+                DockStyle.Top;
+
+            contentCaption.Height =
+                26;
+
+            contentCaption.Text =
+                "محتوى الملاحظة";
+
+            contentCaption.Font =
+                Solvix.UI.AppTheme.Bold(8.5F);
+
+            contentCaption.ForeColor =
+                Solvix.UI.AppTheme.MutedText;
+
+            contentCaption.TextAlign =
+                ContentAlignment.MiddleRight;
+
+            contentCaption.RightToLeft =
+                RightToLeft.Yes;
+
+            contentEditBox.Dock =
+                DockStyle.Fill;
 
             contentEditBox.BackColor =
                 Solvix.UI.AppTheme.SurfaceAlt;
@@ -903,7 +1199,7 @@ namespace SOLVIX
                 Solvix.UI.AppTheme.Text;
 
             contentEditBox.BorderStyle =
-                BorderStyle.FixedSingle;
+                BorderStyle.None;
 
             contentEditBox.Font =
                 Solvix.UI.AppTheme.Regular(10F);
@@ -917,33 +1213,72 @@ namespace SOLVIX
             contentEditBox.ScrollBars =
                 RichTextBoxScrollBars.Vertical;
 
-            contentEditBox.DetectUrls =
-                false;
-
             contentEditBox.WordWrap =
                 true;
+
+            contentEditBox.DetectUrls =
+                false;
 
             contentEditBox.HideSelection =
                 false;
 
-            contentEditBox.AcceptsTab =
-                true;
+            contentFrame.Controls.Add(
+                contentEditBox);
 
-            // ---------------------------------------------------------
-            // CATEGORY
-            // ---------------------------------------------------------
+            contentFrame.Controls.Add(
+                contentCaption);
 
-            categoryCombo.Size =
-                new Size(210, 38);
+            // =========================================================
+            // EDITOR BOTTOM
+            // =========================================================
+
+            editorBottomPanel.Dock =
+                DockStyle.Bottom;
+
+            editorBottomPanel.Height =
+                76;
+
+            editorBottomPanel.BackColor =
+                Color.Transparent;
+
+            categoryCaption.AutoSize =
+                false;
+
+            categoryCaption.Width =
+                80;
+
+            categoryCaption.Height =
+                28;
+
+            categoryCaption.Top =
+                5;
+
+            categoryCaption.Text =
+                "التصنيف";
+
+            categoryCaption.Font =
+                Solvix.UI.AppTheme.Regular(8F);
+
+            categoryCaption.ForeColor =
+                Solvix.UI.AppTheme.MutedText;
+
+            categoryCaption.TextAlign =
+                ContentAlignment.MiddleRight;
+
+            categoryCaption.RightToLeft =
+                RightToLeft.Yes;
+
+            categoryCombo.Width =
+                155;
+
+            categoryCombo.Height =
+                38;
+
+            categoryCombo.Top =
+                33;
 
             categoryCombo.DropDownStyle =
                 ComboBoxStyle.DropDown;
-
-            categoryCombo.DrawMode =
-                DrawMode.OwnerDrawFixed;
-
-            categoryCombo.ItemHeight =
-                32;
 
             categoryCombo.BackColor =
                 Solvix.UI.AppTheme.SurfaceAlt;
@@ -951,11 +1286,8 @@ namespace SOLVIX
             categoryCombo.ForeColor =
                 Solvix.UI.AppTheme.Text;
 
-            categoryCombo.FlatStyle =
-                FlatStyle.Flat;
-
             categoryCombo.Font =
-                Solvix.UI.AppTheme.Regular(9F);
+                Solvix.UI.AppTheme.Regular(8.5F);
 
             categoryCombo.RightToLeft =
                 RightToLeft.Yes;
@@ -971,80 +1303,35 @@ namespace SOLVIX
                     "تطوير"
                 });
 
-            // ---------------------------------------------------------
-            // IMPORTANT
-            // ---------------------------------------------------------
+            importantCheckBox.Width =
+                125;
 
-            importantCheckBox.AutoSize =
-                false;
-
-            importantCheckBox.Size =
-                new Size(120, 32);
+            importantCheckBox.Height =
+                34;
 
             importantCheckBox.Text =
                 "ملاحظة مهمة";
 
-            importantCheckBox.ForeColor =
-                Solvix.UI.AppTheme.Text;
-
-            importantCheckBox.BackColor =
-                Color.Transparent;
-
-            importantCheckBox.Font =
-                Solvix.UI.AppTheme.Regular(8.5F);
-
             importantCheckBox.RightToLeft =
                 RightToLeft.Yes;
 
-            importantCheckBox.TextAlign =
-                ContentAlignment.MiddleRight;
+            pinnedCheckBox.Width =
+                125;
 
-            importantCheckBox.CheckAlign =
-                ContentAlignment.MiddleLeft;
-
-            importantCheckBox.FlatStyle =
-                FlatStyle.Flat;
-
-            // ---------------------------------------------------------
-            // PINNED
-            // ---------------------------------------------------------
-
-            pinnedCheckBox.AutoSize =
-                false;
-
-            pinnedCheckBox.Size =
-                new Size(125, 32);
+            pinnedCheckBox.Height =
+                34;
 
             pinnedCheckBox.Text =
                 "تثبيت الملاحظة";
 
-            pinnedCheckBox.ForeColor =
-                Solvix.UI.AppTheme.Text;
-
-            pinnedCheckBox.BackColor =
-                Color.Transparent;
-
-            pinnedCheckBox.Font =
-                Solvix.UI.AppTheme.Regular(8.5F);
-
             pinnedCheckBox.RightToLeft =
                 RightToLeft.Yes;
 
-            pinnedCheckBox.TextAlign =
-                ContentAlignment.MiddleRight;
+            saveButton.Width =
+                142;
 
-            pinnedCheckBox.CheckAlign =
-                ContentAlignment.MiddleLeft;
-
-            pinnedCheckBox.FlatStyle =
-                FlatStyle.Flat;
-
-            // ---------------------------------------------------------
-            // SAVE
-            // ---------------------------------------------------------
-
-            saveButton.Size =
-                new Size(140, 42);
+            saveButton.Height =
+                42;
 
             saveButton.Text =
                 "حفظ الملاحظة";
@@ -1052,46 +1339,57 @@ namespace SOLVIX
             saveButton.Font =
                 Solvix.UI.AppTheme.Bold(9F);
 
-            // ---------------------------------------------------------
-            // CANCEL
-            // ---------------------------------------------------------
+            cancelButton.Width =
+                92;
 
-            cancelButton.Size =
-                new Size(100, 42);
+            cancelButton.Height =
+                42;
 
             cancelButton.Text =
                 "إلغاء";
 
-            // ---------------------------------------------------------
-            // EDITOR CONTROLS
-            // ---------------------------------------------------------
+            editorBottomPanel.Controls.Add(
+                categoryCaption);
 
-            editorContainer.Controls.Add(
-                saveButton);
-
-            editorContainer.Controls.Add(
-                cancelButton);
-
-            editorContainer.Controls.Add(
-                pinnedCheckBox);
-
-            editorContainer.Controls.Add(
-                importantCheckBox);
-
-            editorContainer.Controls.Add(
+            editorBottomPanel.Controls.Add(
                 categoryCombo);
 
-            editorContainer.Controls.Add(
-                contentEditBox);
+            editorBottomPanel.Controls.Add(
+                importantCheckBox);
+
+            editorBottomPanel.Controls.Add(
+                pinnedCheckBox);
+
+            editorBottomPanel.Controls.Add(
+                cancelButton);
+
+            editorBottomPanel.Controls.Add(
+                saveButton);
+
+            editorBottomPanel.Resize +=
+                (_, _) => LayoutEditorBottom();
+
+            // =========================================================
+            // EDITOR HIERARCHY
+            // =========================================================
 
             editorContainer.Controls.Add(
-                titleEditBox);
+                contentFrame);
+
+            editorContainer.Controls.Add(
+                titleFrame);
+
+            editorContainer.Controls.Add(
+                editorBottomPanel);
+
+            editorContainer.Controls.Add(
+                editorSubHeading);
 
             editorContainer.Controls.Add(
                 editorHeading);
 
             // =========================================================
-            // PANEL HIERARCHY
+            // DETAIL HIERARCHY
             // =========================================================
 
             detailPanel.Controls.Add(
@@ -1103,11 +1401,19 @@ namespace SOLVIX
             detailPanel.Controls.Add(
                 detailHeaderPanel);
 
+            // =========================================================
+            // CONTENT HIERARCHY
+            // =========================================================
+
             contentPanel.Controls.Add(
                 detailPanel);
 
             contentPanel.Controls.Add(
                 listPanel);
+
+            // =========================================================
+            // MAIN HIERARCHY
+            // =========================================================
 
             mainPanel.Controls.Add(
                 contentPanel);
@@ -1129,13 +1435,25 @@ namespace SOLVIX
                 AutoScaleMode.Dpi;
 
             AutoScaleDimensions =
-                new SizeF(96F, 96F);
+                new SizeF(
+                    96F,
+                    96F);
 
             BackColor =
                 Solvix.UI.AppTheme.Background;
 
+            ForeColor =
+                Solvix.UI.AppTheme.Text;
+
             ClientSize =
-                new Size(1440, 900);
+                new Size(
+                    1440,
+                    900);
+
+            MinimumSize =
+                new Size(
+                    1120,
+                    720);
 
             Controls.Add(
                 mainPanel);
@@ -1143,17 +1461,8 @@ namespace SOLVIX
             Font =
                 Solvix.UI.AppTheme.Regular(9.5F);
 
-            ForeColor =
-                Solvix.UI.AppTheme.Text;
-
-            MinimumSize =
-                new Size(1100, 700);
-
             Name =
                 "Notes";
-
-            StartPosition =
-                FormStartPosition.CenterScreen;
 
             Text =
                 "الملاحظات";
@@ -1164,95 +1473,32 @@ namespace SOLVIX
             RightToLeftLayout =
                 true;
 
+            StartPosition =
+                FormStartPosition.CenterScreen;
+
             WindowState =
                 FormWindowState.Maximized;
 
             Shown += (_, _) =>
             {
                 LayoutStats();
-                LayoutDetailHeader();
                 LayoutInfoPanel();
+                LayoutDetailHeader();
+                LayoutEditorBottom();
             };
 
             ResumeLayout(false);
             PerformLayout();
         }
 
-        private void ConfigureStat(
-            Solvix.UI.StatCard card,
-            string title,
-            string value,
-            string subtitle,
-            Color accent)
-        {
-            card.Width = 200;
-            card.Height = 98;
-
-            card.FillColor =
-                Solvix.UI.AppTheme.Surface;
-
-            card.BorderColor =
-                Solvix.UI.AppTheme.Border;
-
-            card.BorderThickness = 1;
-            card.CornerRadius = 12;
-
-            card.Title = title;
-            card.Value = value;
-            card.Subtitle = subtitle;
-            card.AccentColor = accent;
-        }
-
-        private void ConfigureInfo(
-            Label label,
-            Label value,
-            string caption,
-            string initialValue)
-        {
-            label.AutoSize = false;
-            label.Size = new Size(160, 22);
-
-            label.Font =
-                Solvix.UI.AppTheme.Regular(8F);
-
-            label.ForeColor =
-                Solvix.UI.AppTheme.MutedText;
-
-            label.Text =
-                caption;
-
-            label.TextAlign =
-                ContentAlignment.MiddleRight;
-
-            label.RightToLeft =
-                RightToLeft.Yes;
-
-            value.AutoSize = false;
-            value.Size = new Size(160, 30);
-
-            value.Font =
-                Solvix.UI.AppTheme.Bold(9.5F);
-
-            value.ForeColor =
-                Solvix.UI.AppTheme.Text;
-
-            value.Text =
-                initialValue;
-
-            value.TextAlign =
-                ContentAlignment.MiddleRight;
-
-            value.RightToLeft =
-                RightToLeft.Yes;
-        }
+        // =============================================================
+        // LAYOUT
+        // =============================================================
 
         private void LayoutStats()
         {
-            if (statsPanel == null ||
-                statsPanel.ClientSize.Width <= 0)
-            {
+            if (statsPanel == null)
                 return;
-            }
 
             int width =
                 statsPanel.ClientSize.Width;
@@ -1288,10 +1534,17 @@ namespace SOLVIX
             todayCard.Left =
                 (cardWidth + gap) * 3;
 
-            totalCard.Top = 6;
-            importantCard.Top = 6;
-            pinnedCard.Top = 6;
-            todayCard.Top = 6;
+            totalCard.Top =
+                5;
+
+            importantCard.Top =
+                5;
+
+            pinnedCard.Top =
+                5;
+
+            todayCard.Top =
+                5;
         }
 
         private void LayoutDetailHeader()
@@ -1299,32 +1552,23 @@ namespace SOLVIX
             if (detailHeaderPanel == null)
                 return;
 
-            int right =
+            int width =
                 detailHeaderPanel.ClientSize.Width;
 
             deleteButton.Left =
-                right -
+                width -
                 deleteButton.Width -
                 18;
-
-            deleteButton.Top =
-                16;
 
             editButton.Left =
                 deleteButton.Left -
                 editButton.Width -
                 8;
 
-            editButton.Top =
-                16;
-
             pinButton.Left =
                 editButton.Left -
                 pinButton.Width -
                 8;
-
-            pinButton.Top =
-                16;
 
             noteBadge.Left =
                 Math.Max(
@@ -1333,33 +1577,26 @@ namespace SOLVIX
                     noteBadge.Width -
                     12);
 
-            noteBadge.Top =
-                22;
-
             detailHeaderLabel.Left =
-                Math.Max(
-                    18,
-                    noteBadge.Left -
-                    245);
-
-            detailHeaderLabel.Top =
                 18;
 
             detailHeaderLabel.Width =
                 Math.Max(
-                    150,
+                    180,
                     noteBadge.Left -
-                    detailHeaderLabel.Left -
-                    20);
+                    30);
+
+            deleteButton.Top = 16;
+            editButton.Top = 16;
+            pinButton.Top = 16;
+            noteBadge.Top = 21;
+            detailHeaderLabel.Top = 17;
         }
 
         private void LayoutInfoPanel()
         {
-            if (infoPanel == null ||
-                infoPanel.ClientSize.Width <= 0)
-            {
+            if (infoPanel == null)
                 return;
-            }
 
             int width =
                 infoPanel.ClientSize.Width;
@@ -1413,14 +1650,150 @@ namespace SOLVIX
             updatedValue.Width =
                 itemWidth;
 
-            categoryLabel.Top = 17;
-            categoryValue.Top = 43;
+            categoryLabel.Top = 14;
+            createdLabel.Top = 14;
+            updatedLabel.Top = 14;
 
-            createdLabel.Top = 17;
-            createdValue.Top = 43;
+            categoryValue.Top = 40;
+            createdValue.Top = 40;
+            updatedValue.Top = 40;
+        }
 
-            updatedLabel.Top = 17;
-            updatedValue.Top = 43;
+        private void LayoutEditorBottom()
+        {
+            if (editorBottomPanel == null)
+                return;
+
+            int width =
+                editorBottomPanel.ClientSize.Width;
+
+            saveButton.Top = 27;
+
+            cancelButton.Top = 27;
+
+            saveButton.Left =
+                width -
+                saveButton.Width;
+
+            cancelButton.Left =
+                saveButton.Left -
+                cancelButton.Width -
+                10;
+
+            pinnedCheckBox.Left =
+                Math.Max(
+                    8,
+                    cancelButton.Left -
+                    pinnedCheckBox.Width -
+                    18);
+
+            pinnedCheckBox.Top = 25;
+
+            importantCheckBox.Left =
+                Math.Max(
+                    8,
+                    pinnedCheckBox.Left -
+                    importantCheckBox.Width -
+                    10);
+
+            importantCheckBox.Top = 25;
+
+            categoryCombo.Left =
+                Math.Max(
+                    8,
+                    importantCheckBox.Left -
+                    categoryCombo.Width -
+                    18);
+
+            categoryCaption.Left =
+                categoryCombo.Left;
+
+            categoryCombo.Top = 32;
+            categoryCaption.Top = 4;
+        }
+
+        // =============================================================
+        // DESIGN HELPERS
+        // =============================================================
+
+        private void ConfigureStat(
+            Solvix.UI.StatCard card,
+            string title,
+            string value,
+            string subtitle,
+            Color accent)
+        {
+            card.Height =
+                92;
+
+            card.FillColor =
+                Solvix.UI.AppTheme.Surface;
+
+            card.BorderColor =
+                Solvix.UI.AppTheme.Border;
+
+            card.BorderThickness =
+                1;
+
+            card.CornerRadius =
+                12;
+
+            card.Title =
+                title;
+
+            card.Value =
+                value;
+
+            card.Subtitle =
+                subtitle;
+
+            card.AccentColor =
+                accent;
+        }
+
+        private void ConfigureInfo(
+            Label label,
+            Label value,
+            string title,
+            string initialValue)
+        {
+            label.AutoSize = false;
+
+            label.Height = 21;
+
+            label.Font =
+                Solvix.UI.AppTheme.Regular(7.8F);
+
+            label.ForeColor =
+                Solvix.UI.AppTheme.MutedText;
+
+            label.Text =
+                title;
+
+            label.TextAlign =
+                ContentAlignment.MiddleRight;
+
+            label.RightToLeft =
+                RightToLeft.Yes;
+
+            value.AutoSize = false;
+
+            value.Height = 28;
+
+            value.Font =
+                Solvix.UI.AppTheme.Bold(9F);
+
+            value.ForeColor =
+                Solvix.UI.AppTheme.Text;
+
+            value.Text =
+                initialValue;
+
+            value.TextAlign =
+                ContentAlignment.MiddleRight;
+
+            value.RightToLeft =
+                RightToLeft.Yes;
         }
     }
 }

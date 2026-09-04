@@ -10,7 +10,7 @@ namespace SOLVIX
     public partial class Notes : Form
     {
         private readonly NotesBusinessLayer _business = new();
-        private readonly Timer _searchTimer;
+        private readonly System.Windows.Forms.Timer _searchTimer;
         private List<NoteItem> _visibleNotes = new();
         private int _selectedNoteId;
         private bool _editMode;
@@ -27,13 +27,8 @@ namespace SOLVIX
             MinimumSize = new Size(1100, 720);
             WindowState = FormWindowState.Maximized;
 
-            _searchTimer = new Timer { Interval = 280 };
-            _searchTimer.Tick += (_, _) =>
-            {
-                _searchTimer.Stop();
-                if (!_editMode)
-                    LoadData();
-            };
+            _searchTimer = new System.Windows.Forms.Timer { Interval = 280 };
+            _searchTimer.Tick += SearchTimer_Tick;
 
             Load += Notes_Load;
             Resize += Notes_Resize;
@@ -50,16 +45,25 @@ namespace SOLVIX
             cancelButton.Click += CancelButton_Click;
         }
 
+        private void SearchTimer_Tick(object? sender, EventArgs e)
+        {
+            _searchTimer.Stop();
+            if (!_editMode)
+                LoadData();
+        }
+
         private void Notes_Load(object? sender, EventArgs e)
         {
             SetEditMode(false);
             LoadData();
             LayoutContent();
+            LayoutStats();
         }
 
         private void Notes_Resize(object? sender, EventArgs e)
         {
             LayoutContent();
+            LayoutStats();
             ResizeNoteCards();
         }
 
@@ -73,6 +77,30 @@ namespace SOLVIX
                 return;
 
             listPanel.Width = Math.Clamp((int)(width * 0.38), 360, 455);
+        }
+
+        private void LayoutStats()
+        {
+            if (statsPanel == null || statsPanel.ClientSize.Width <= 0)
+                return;
+
+            const int gap = 12;
+            int available = statsPanel.ClientSize.Width - (gap * 3);
+            int cardWidth = Math.Max(170, available / 4);
+
+            StatCardLayout(totalCard, cardWidth, 3);
+            StatCardLayout(importantCard, cardWidth, 2);
+            StatCardLayout(pinnedCard, cardWidth, 1);
+            StatCardLayout(todayCard, cardWidth, 0);
+        }
+
+        private static void StatCardLayout(Solvix.UI.StatCard card, int width, int index)
+        {
+            const int gap = 12;
+            card.Width = width;
+            card.Height = 90;
+            card.Left = index * (width + gap);
+            card.Top = 8;
         }
 
         private void LoadData()
@@ -125,6 +153,7 @@ namespace SOLVIX
                 }
 
                 RefreshActionButtons();
+                LayoutStats();
                 ResizeNoteCards();
             }
             catch (Exception ex)
@@ -341,13 +370,13 @@ namespace SOLVIX
         {
             _selectedNoteId = 0;
             detailHeaderLabel.Text = "تفاصيل الملاحظة";
-            detailTitleLabel.Text = "لا توجد ملاحظة";
+            detailTitleLabel.Text = "";
             detailDateLabel.Text = string.Empty;
-            detailContentLabel.Text = "اختر ملاحظة من القائمة أو أضف ملاحظة جديدة.";
-            categoryValue.Text = "-";
-            createdValue.Text = "-";
-            updatedValue.Text = "-";
-            noteBadge.Text = "ملاحظة";
+            detailContentLabel.Text = "";
+            categoryValue.Text = "";
+            createdValue.Text = "";
+            updatedValue.Text = "";
+            noteBadge.Text = "";
             noteBadge.Style = Solvix.UI.BadgeStyle.Primary;
             pinButton.Text = "⚐";
             pinButton.ForeColor = Solvix.UI.AppTheme.MutedText;
@@ -641,7 +670,6 @@ namespace SOLVIX
                 AcceptsTab = true;
                 Multiline = true;
                 WordWrap = true;
-                BorderStyle = BorderStyle.None;
                 RightToLeft = RightToLeft.Yes;
             }
         }

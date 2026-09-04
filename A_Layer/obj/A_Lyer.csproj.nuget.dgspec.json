@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\A__Lyer\\A_Lyer.csproj": {}
+    "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj": {}
   },
   "projects": {
-    "C:\\A__Lyer\\A_Lyer.csproj": {
+    "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\A__Lyer\\A_Lyer.csproj",
+        "projectUniqueName": "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj",
         "projectName": "A_Lyer",
-        "projectPath": "C:\\A__Lyer\\A_Lyer.csproj",
+        "projectPath": "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj",
         "packagesPath": "C:\\Users\\Xenergy\\.nuget\\packages\\",
-        "outputPath": "C:\\A__Lyer\\obj\\",
+        "outputPath": "C:\\SOLVIX\\A_Layer\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

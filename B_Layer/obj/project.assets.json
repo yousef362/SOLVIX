@@ -304,14 +304,13 @@
     },
     "A_Lyer/1.0.0": {
       "type": "project",
-      "path": "../A__Lyer/A_Lyer.csproj",
-      "msbuildProject": "../A__Lyer/A_Lyer.csproj"
+      "path": "../A_Layer/A_Lyer.csproj",
+      "msbuildProject": "../A_Layer/A_Lyer.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "A_Lyer >= 1.0.0",
-      "Microsoft.Data.Sqlite >= 10.0.11"
+      "A_Lyer >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -321,11 +320,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\B__Lyer\\B__Lyer.csproj",
+      "projectUniqueName": "C:\\SOLVIX\\B_Layer\\B__Lyer.csproj",
       "projectName": "B__Lyer",
-      "projectPath": "C:\\B__Lyer\\B__Lyer.csproj",
+      "projectPath": "C:\\SOLVIX\\B_Layer\\B__Lyer.csproj",
       "packagesPath": "C:\\Users\\Xenergy\\.nuget\\packages\\",
-      "outputPath": "C:\\B__Lyer\\obj\\",
+      "outputPath": "C:\\SOLVIX\\B_Layer\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -347,8 +346,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\A__Lyer\\A_Lyer.csproj": {
-              "projectPath": "C:\\A__Lyer\\A_Lyer.csproj"
+            "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj": {
+              "projectPath": "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj"
             }
           }
         }
@@ -369,12 +368,6 @@
       "net10.0": {
         "framework": "net10.0",
         "targetAlias": "net10.0",
-        "dependencies": {
-          "Microsoft.Data.Sqlite": {
-            "target": "Package",
-            "version": "[10.0.11, )"
-          }
-        },
         "imports": [
           "net461",
           "net462",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "d4c0VuBBWW8=",
+  "dgSpecHash": "ZNL+yQViW2Y=",
   "success": true,
-  "projectFilePath": "C:\\A__Lyer\\A_Lyer.csproj",
+  "projectFilePath": "C:\\SOLVIX\\A_Layer\\A_Lyer.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Xenergy\\.nuget\\packages\\microsoft.data.sqlite\\10.0.11\\microsoft.data.sqlite.10.0.11.nupkg.sha512",
     "C:\\Users\\Xenergy\\.nuget\\packages\\microsoft.data.sqlite.core\\10.0.11\\microsoft.data.sqlite.core.10.0.11.nupkg.sha512",

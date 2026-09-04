@@ -3,24 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace SOLVIX
 {
-    /*
-     * منطق فورم الملاحظات:
-     * - إدارة البحث والفلترة.
-     * - إضافة وتعديل وحذف وتثبيت الملاحظات.
-     * - لا يتعامل مباشرة مع SQLite.
-     * - جميع العمليات تمر عبر B__Lyer.
-     * - الواجهة تتبدل بين وضع العرض ووضع التحرير بدون فتح فورم آخر.
-     */
-
     public partial class Notes : Form
     {
         private readonly NotesBusinessLayer _business = new();
-
+        private readonly Timer _searchTimer;
+        private List<NoteItem> _visibleNotes = new();
         private int _selectedNoteId;
         private bool _editMode;
         private bool _loading;
@@ -32,6 +23,17 @@ namespace SOLVIX
 
             DoubleBuffered = true;
             KeyPreview = true;
+            BackColor = Solvix.UI.AppTheme.Background;
+            MinimumSize = new Size(1100, 720);
+            WindowState = FormWindowState.Maximized;
+
+            _searchTimer = new Timer { Interval = 280 };
+            _searchTimer.Tick += (_, _) =>
+            {
+                _searchTimer.Stop();
+                if (!_editMode)
+                    LoadData();
+            };
 
             Load += Notes_Load;
             Resize += Notes_Resize;
@@ -46,36 +48,88 @@ namespace SOLVIX
 
             saveButton.Click += SaveButton_Click;
             cancelButton.Click += CancelButton_Click;
-
-            notesScrollPanel.Resize += (_, _) => ResizeNoteCards();
         }
 
         private void Notes_Load(object? sender, EventArgs e)
         {
             SetEditMode(false);
-            LoadAll();
+            LoadData();
+            LayoutContent();
         }
 
         private void Notes_Resize(object? sender, EventArgs e)
         {
+            LayoutContent();
             ResizeNoteCards();
         }
 
-        // ============================================================
-        // DATA
-        // ============================================================
-
-        private void LoadAll()
+        private void LayoutContent()
         {
-            if (_loading)
+            if (contentPanel == null || listPanel == null)
+                return;
+
+            int width = contentPanel.ClientSize.Width;
+            if (width <= 0)
+                return;
+
+            listPanel.Width = Math.Clamp((int)(width * 0.38), 360, 455);
+        }
+
+        private void LoadData()
+        {
+            if (_loading || IsDisposed)
                 return;
 
             _loading = true;
-
             try
             {
-                LoadStatistics();
-                LoadNotes();
+                NoteStatistics stats = _business.GetStatistics();
+                totalCard.Value = stats.Total.ToString();
+                importantCard.Value = stats.Important.ToString();
+                pinnedCard.Value = stats.Pinned.ToString();
+                todayCard.Value = stats.Today.ToString();
+
+                _visibleNotes = _business.GetNotes(
+                    NormalizeSearch(searchBox.Text),
+                    _activeFilter);
+
+                listCountLabel.Text = GetNotesCountText(_visibleNotes.Count);
+                BuildNotesList(_visibleNotes);
+
+                NoteItem? selected = null;
+                if (_selectedNoteId > 0)
+                {
+                    foreach (NoteItem item in _visibleNotes)
+                    {
+                        if (item.Id == _selectedNoteId)
+                        {
+                            selected = item;
+                            break;
+                        }
+                    }
+                }
+
+                if (selected == null && _visibleNotes.Count > 0)
+                {
+                    selected = _visibleNotes[0];
+                    _selectedNoteId = selected.Id;
+                }
+
+                if (selected == null)
+                {
+                    ClearSelection();
+                }
+                else if (!_editMode)
+                {
+                    DisplayNote(selected);
+                }
+
+                RefreshActionButtons();
+                ResizeNoteCards();
+            }
+            catch (Exception ex)
+            {
+                ShowError("تعذر تحميل الملاحظات.", ex);
             }
             finally
             {
@@ -83,125 +137,35 @@ namespace SOLVIX
             }
         }
 
-        private void LoadStatistics()
+        private void BuildNotesList(List<NoteItem> notes)
         {
+            notesScrollPanel.SuspendLayout();
             try
             {
-                var stats = _business.GetStatistics();
-
-                totalCard.Value = stats.Total.ToString();
-                importantCard.Value = stats.Important.ToString();
-                pinnedCard.Value = stats.Pinned.ToString();
-                todayCard.Value = stats.Today.ToString();
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "تعذر تحميل إحصاءات الملاحظات.",
-                    ex);
-            }
-        }
-
-        private void LoadNotes()
-        {
-            try
-            {
-                var notes = _business.GetNotes(
-                    NormalizeSearch(searchBox.Text),
-                    _activeFilter);
-
-                BuildNotesList(notes);
-
-                listCountLabel.Text = GetNotesCountText(notes.Count);
+                notesScrollPanel.Controls.Clear();
+                notesScrollPanel.AutoScroll = true;
 
                 if (notes.Count == 0)
                 {
-                    ClearSelection();
                     ShowEmptyState();
                     return;
                 }
 
-                NoteItem? selectedNote = null;
-
-                if (_selectedNoteId > 0)
-                {
-                    selectedNote = _business.GetNote(_selectedNoteId);
-
-                    if (selectedNote != null &&
-                        !ContainsNote(notes, selectedNote.Id))
-                    {
-                        selectedNote = null;
-                    }
-                }
-
-                if (selectedNote == null)
-                {
-                    _selectedNoteId = notes[0].Id;
-                    selectedNote = notes[0];
-                }
-
-                SetEditMode(false);
-                DisplayNote(selectedNote);
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "تعذر تحميل الملاحظات.",
-                    ex);
-            }
-        }
-
-        private void BuildNotesList(List<NoteItem> notes)
-        {
-            notesScrollPanel.SuspendLayout();
-
-            try
-            {
-                notesScrollPanel.Controls.Clear();
-
                 int top = 10;
-
-                foreach (var note in notes)
+                foreach (NoteItem note in notes)
                 {
                     Control card = CreateNoteCard(note);
-
-                    card.Left = 10;
+                    card.Left = 8;
                     card.Top = top;
-
                     notesScrollPanel.Controls.Add(card);
-
                     top += card.Height + 10;
                 }
             }
             finally
             {
                 notesScrollPanel.ResumeLayout(true);
-                ResizeNoteCards();
             }
         }
-
-        private void RefreshNotesList()
-        {
-            try
-            {
-                var notes = _business.GetNotes(
-                    NormalizeSearch(searchBox.Text),
-                    _activeFilter);
-
-                BuildNotesList(notes);
-                listCountLabel.Text = GetNotesCountText(notes.Count);
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "تعذر تحديث قائمة الملاحظات.",
-                    ex);
-            }
-        }
-
-        // ============================================================
-        // NOTE CARDS
-        // ============================================================
 
         private Control CreateNoteCard(NoteItem note)
         {
@@ -209,17 +173,13 @@ namespace SOLVIX
 
             var card = new Solvix.UI.RoundedPanel
             {
-                Height = 108,
-                FillColor = selected
-                    ? Color.FromArgb(24, 55, 90)
-                    : Color.FromArgb(13, 27, 44),
-                BorderColor = selected
-                    ? Solvix.UI.AppTheme.Primary
-                    : Color.FromArgb(28, 49, 74),
+                Height = 106,
+                FillColor = selected ? Solvix.UI.AppTheme.CardSelected : Solvix.UI.AppTheme.Surface,
+                BorderColor = selected ? Solvix.UI.AppTheme.Primary : Solvix.UI.AppTheme.Border,
                 BorderThickness = 1,
                 CornerRadius = 11,
                 Cursor = Cursors.Hand,
-                Padding = new Padding(14, 11, 14, 10),
+                Padding = new Padding(14, 10, 14, 9),
                 RightToLeft = RightToLeft.Yes
             };
 
@@ -227,21 +187,17 @@ namespace SOLVIX
             {
                 Dock = DockStyle.Right,
                 Width = 3,
-                BackColor = selected
-                    ? Solvix.UI.AppTheme.Primary
-                    : Color.FromArgb(37, 59, 84)
+                BackColor = selected ? Solvix.UI.AppTheme.Primary : Solvix.UI.AppTheme.Border
             };
 
             var title = new Label
             {
                 Dock = DockStyle.Top,
-                Height = 27,
+                Height = 28,
                 BackColor = Color.Transparent,
                 ForeColor = Solvix.UI.AppTheme.Text,
-                Font = Solvix.UI.AppTheme.Bold(9.5F),
-                Text = string.IsNullOrWhiteSpace(note.Title)
-                    ? "بدون عنوان"
-                    : note.Title.Trim(),
+                Font = Solvix.UI.AppTheme.Bold(9.6F),
+                Text = string.IsNullOrWhiteSpace(note.Title) ? "بدون عنوان" : note.Title.Trim(),
                 TextAlign = ContentAlignment.MiddleRight,
                 RightToLeft = RightToLeft.Yes,
                 AutoEllipsis = true,
@@ -251,10 +207,10 @@ namespace SOLVIX
             var preview = new Label
             {
                 Dock = DockStyle.Top,
-                Height = 36,
+                Height = 38,
                 BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(151, 167, 188),
-                Font = Solvix.UI.AppTheme.Regular(8.2F),
+                ForeColor = Solvix.UI.AppTheme.MutedText,
+                Font = Solvix.UI.AppTheme.Regular(8.1F),
                 Text = BuildPreview(note.Content),
                 TextAlign = ContentAlignment.TopRight,
                 RightToLeft = RightToLeft.Yes,
@@ -262,26 +218,17 @@ namespace SOLVIX
                 Cursor = Cursors.Hand
             };
 
-            string meta = string.IsNullOrWhiteSpace(note.Category)
-                ? "عام"
-                : note.Category;
-
-            if (note.IsPinned)
-                meta = "مثبت  •  " + meta;
-
-            if (note.IsImportant)
-                meta = "مهم  •  " + meta;
-
+            string meta = string.IsNullOrWhiteSpace(note.Category) ? "عام" : note.Category;
+            if (note.IsPinned) meta = "مثبت  •  " + meta;
+            if (note.IsImportant) meta = "مهم  •  " + meta;
             meta += "  •  " + FormatDate(note.UpdatedAt);
 
             var footer = new Label
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.Transparent,
-                ForeColor = selected
-                    ? Solvix.UI.AppTheme.PrimaryHover
-                    : Solvix.UI.AppTheme.MutedText,
-                Font = Solvix.UI.AppTheme.Regular(7.8F),
+                ForeColor = selected ? Solvix.UI.AppTheme.PrimaryHover : Solvix.UI.AppTheme.MutedText,
+                Font = Solvix.UI.AppTheme.Regular(7.7F),
                 Text = meta,
                 TextAlign = ContentAlignment.BottomRight,
                 RightToLeft = RightToLeft.Yes,
@@ -289,39 +236,45 @@ namespace SOLVIX
                 Cursor = Cursors.Hand
             };
 
-            void Select()
-            {
-                SelectNote(note.Id);
-            }
-
-            card.Click += (_, _) => Select();
-            title.Click += (_, _) => Select();
-            preview.Click += (_, _) => Select();
-            footer.Click += (_, _) => Select();
+            EventHandler select = (_, _) => SelectVisibleNote(note.Id);
+            card.Click += select;
+            title.Click += select;
+            preview.Click += select;
+            footer.Click += select;
 
             card.Controls.Add(accent);
             card.Controls.Add(footer);
             card.Controls.Add(preview);
             card.Controls.Add(title);
-
             return card;
+        }
+
+        private void SelectVisibleNote(int id)
+        {
+            foreach (NoteItem note in _visibleNotes)
+            {
+                if (note.Id != id)
+                    continue;
+
+                _selectedNoteId = id;
+                SetEditMode(false);
+                DisplayNote(note);
+                BuildNotesList(_visibleNotes);
+                RefreshActionButtons();
+                ResizeNoteCards();
+                return;
+            }
         }
 
         private void ResizeNoteCards()
         {
-            if (notesScrollPanel == null ||
-                notesScrollPanel.ClientSize.Width <= 0)
-            {
+            if (notesScrollPanel == null || notesScrollPanel.ClientSize.Width <= 0)
                 return;
-            }
 
-            int width =
-                Math.Max(
-                    220,
-                    notesScrollPanel.ClientSize.Width -
-                    notesScrollPanel.Padding.Left -
-                    notesScrollPanel.Padding.Right -
-                    4);
+            int width = Math.Max(240,
+                notesScrollPanel.ClientSize.Width -
+                notesScrollPanel.Padding.Left -
+                notesScrollPanel.Padding.Right - 4);
 
             foreach (Control control in notesScrollPanel.Controls)
             {
@@ -332,573 +285,306 @@ namespace SOLVIX
 
         private void ShowEmptyState()
         {
-            var emptyPanel = new Panel
+            var empty = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 190,
+                Height = 220,
                 BackColor = Color.Transparent,
-                Padding = new Padding(20)
+                Padding = new Padding(24)
             };
 
             var title = new Label
             {
                 Dock = DockStyle.Top,
-                Height = 38,
-                ForeColor = Solvix.UI.AppTheme.Text,
+                Height = 42,
                 BackColor = Color.Transparent,
-                Font = Solvix.UI.AppTheme.Bold(10F),
+                ForeColor = Solvix.UI.AppTheme.Text,
+                Font = Solvix.UI.AppTheme.Bold(11F),
                 Text = "لا توجد ملاحظات",
                 TextAlign = ContentAlignment.BottomCenter,
                 RightToLeft = RightToLeft.Yes
             };
 
-            var subtitle = new Label
+            var text = new Label
             {
                 Dock = DockStyle.Top,
-                Height = 70,
-                ForeColor = Solvix.UI.AppTheme.MutedText,
+                Height = 72,
                 BackColor = Color.Transparent,
+                ForeColor = Solvix.UI.AppTheme.MutedText,
                 Font = Solvix.UI.AppTheme.Regular(8.5F),
-                Text =
-                    "لا توجد ملاحظات مطابقة للبحث أو الفلترة الحالية.\r\n" +
-                    "ابدأ بإضافة ملاحظة جديدة.",
+                Text = "ابدأ بإضافة ملاحظة جديدة.",
                 TextAlign = ContentAlignment.MiddleCenter,
                 RightToLeft = RightToLeft.Yes
             };
 
-            emptyPanel.Controls.Add(subtitle);
-            emptyPanel.Controls.Add(title);
-
-            notesScrollPanel.Controls.Add(emptyPanel);
-        }
-
-        // ============================================================
-        // SELECTION
-        // ============================================================
-
-        private void SelectNote(int id)
-        {
-            try
-            {
-                var note = _business.GetNote(id);
-
-                if (note == null)
-                {
-                    ClearSelection();
-                    return;
-                }
-
-                _selectedNoteId = id;
-
-                SetEditMode(false);
-                DisplayNote(note);
-                RefreshNotesList();
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "تعذر فتح الملاحظة.",
-                    ex);
-            }
+            empty.Controls.Add(text);
+            empty.Controls.Add(title);
+            notesScrollPanel.Controls.Add(empty);
         }
 
         private void DisplayNote(NoteItem note)
         {
             detailHeaderLabel.Text = "تفاصيل الملاحظة";
-
-            detailTitleLabel.Text =
-                string.IsNullOrWhiteSpace(note.Title)
-                    ? "بدون عنوان"
-                    : note.Title;
-
-            detailDateLabel.Text =
-                $"تم الإنشاء {FormatDate(note.CreatedAt)}  •  آخر تحديث {FormatDate(note.UpdatedAt)}";
-
-            detailContentLabel.Text =
-                string.IsNullOrWhiteSpace(note.Content)
-                    ? "لا يوجد محتوى لهذه الملاحظة."
-                    : note.Content;
-
-            categoryValue.Text =
-                string.IsNullOrWhiteSpace(note.Category)
-                    ? "عام"
-                    : note.Category;
-
-            createdValue.Text =
-                FormatDate(note.CreatedAt);
-
-            updatedValue.Text =
-                FormatDate(note.UpdatedAt);
-
-            noteBadge.Text =
-                note.IsImportant
-                    ? "مهم"
-                    : "ملاحظة";
-
-            noteBadge.Style =
-                note.IsImportant
-                    ? Solvix.UI.BadgeStyle.Warning
-                    : Solvix.UI.BadgeStyle.Primary;
-
-            pinButton.Text =
-                note.IsPinned
-                    ? "⚑"
-                    : "⚐";
-
-            pinButton.ForeColor =
-                note.IsPinned
-                    ? Solvix.UI.AppTheme.PrimaryHover
-                    : Solvix.UI.AppTheme.MutedText;
+            detailTitleLabel.Text = string.IsNullOrWhiteSpace(note.Title) ? "بدون عنوان" : note.Title;
+            detailDateLabel.Text = $"تم الإنشاء {FormatDate(note.CreatedAt)}  •  آخر تحديث {FormatDate(note.UpdatedAt)}";
+            detailContentLabel.Text = note.Content ?? string.Empty;
+            categoryValue.Text = string.IsNullOrWhiteSpace(note.Category) ? "عام" : note.Category;
+            createdValue.Text = FormatDate(note.CreatedAt);
+            updatedValue.Text = FormatDate(note.UpdatedAt);
+            noteBadge.Text = note.IsImportant ? "مهم" : "ملاحظة";
+            noteBadge.Style = note.IsImportant ? Solvix.UI.BadgeStyle.Warning : Solvix.UI.BadgeStyle.Primary;
+            pinButton.Text = note.IsPinned ? "⚑" : "⚐";
+            pinButton.ForeColor = note.IsPinned ? Solvix.UI.AppTheme.PrimaryHover : Solvix.UI.AppTheme.MutedText;
         }
 
         private void ClearSelection()
         {
             _selectedNoteId = 0;
-
             detailHeaderLabel.Text = "تفاصيل الملاحظة";
             detailTitleLabel.Text = "لا توجد ملاحظة";
             detailDateLabel.Text = string.Empty;
-
-            detailContentLabel.Text =
-                "اختر ملاحظة من القائمة أو أضف ملاحظة جديدة.";
-
+            detailContentLabel.Text = "اختر ملاحظة من القائمة أو أضف ملاحظة جديدة.";
             categoryValue.Text = "-";
             createdValue.Text = "-";
             updatedValue.Text = "-";
-
             noteBadge.Text = "ملاحظة";
-            noteBadge.Style =
-                Solvix.UI.BadgeStyle.Primary;
-
+            noteBadge.Style = Solvix.UI.BadgeStyle.Primary;
             pinButton.Text = "⚐";
-            pinButton.ForeColor =
-                Solvix.UI.AppTheme.MutedText;
+            pinButton.ForeColor = Solvix.UI.AppTheme.MutedText;
+            RefreshActionButtons();
         }
 
-        // ============================================================
-        // ADD
-        // ============================================================
-
-        private void AddNoteButton_Click(
-            object? sender,
-            EventArgs e)
+        private void SearchBox_TextChanged(object? sender, EventArgs e)
         {
+            if (_editMode)
+                return;
+
+            _searchTimer.Stop();
+            _searchTimer.Start();
+        }
+
+        private void FilterButton_Click(object? sender, EventArgs e)
+        {
+            _activeFilter = _activeFilter switch
+            {
+                "All" => "Important",
+                "Important" => "Pinned",
+                _ => "All"
+            };
+
+            filterButton.Text = _activeFilter switch
+            {
+                "Important" => "مهم",
+                "Pinned" => "مثبت",
+                _ => "الكل"
+            };
+
+            _selectedNoteId = 0;
+            LoadData();
+        }
+
+        private void AddNoteButton_Click(object? sender, EventArgs e)
+        {
+            _searchTimer.Stop();
             _selectedNoteId = 0;
 
-            titleEditBox.Clear();
-            contentEditBox.Clear();
-
-            categoryCombo.SelectedIndex = -1;
+            titleEditBox.Text = string.Empty;
+            contentEditBox.Text = string.Empty;
             categoryCombo.Text = string.Empty;
-
+            categoryCombo.SelectedIndex = -1;
             importantCheckBox.Checked = false;
             pinnedCheckBox.Checked = false;
 
-            editorHeading.Text =
-                "إضافة ملاحظة جديدة";
-
-            editorSubHeading.Text =
-                "أنشئ ملاحظتك واختَر التصنيف والحالة قبل الحفظ.";
-
+            editorHeading.Text = "إضافة ملاحظة جديدة";
+            editorSubHeading.Text = "";
             SetEditMode(true);
-
-            BeginInvoke(new Action(() =>
-            {
-                titleEditBox.Focus();
-            }));
+            RefreshActionButtons();
+            titleEditBox.Focus();
         }
 
-        // ============================================================
-        // EDIT
-        // ============================================================
-
-        private void EditButton_Click(
-            object? sender,
-            EventArgs e)
+        private void EditButton_Click(object? sender, EventArgs e)
         {
             if (_selectedNoteId <= 0)
                 return;
 
-            try
-            {
-                var note =
-                    _business.GetNote(_selectedNoteId);
+            NoteItem? note = FindVisibleNote(_selectedNoteId);
+            if (note == null)
+                return;
 
-                if (note == null)
-                {
-                    ShowError("الملاحظة غير موجودة.");
-                    return;
-                }
+            titleEditBox.Text = note.Title;
+            contentEditBox.Text = note.Content;
+            categoryCombo.Text = note.Category ?? string.Empty;
+            importantCheckBox.Checked = note.IsImportant;
+            pinnedCheckBox.Checked = note.IsPinned;
 
-                titleEditBox.Text =
-                    note.Title;
-
-                contentEditBox.Text =
-                    note.Content;
-
-                categoryCombo.Text =
-                    note.Category ?? string.Empty;
-
-                importantCheckBox.Checked =
-                    note.IsImportant;
-
-                pinnedCheckBox.Checked =
-                    note.IsPinned;
-
-                editorHeading.Text =
-                    "تعديل الملاحظة";
-
-                editorSubHeading.Text =
-                    "عدّل البيانات المطلوبة ثم احفظ التغييرات.";
-
-                SetEditMode(true);
-
-                BeginInvoke(new Action(() =>
-                {
-                    titleEditBox.Focus();
-                    titleEditBox.SelectAll();
-                }));
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "تعذر فتح محرر الملاحظة.",
-                    ex);
-            }
+            editorHeading.Text = "تعديل الملاحظة";
+            editorSubHeading.Text = "";
+            SetEditMode(true);
+            RefreshActionButtons();
+            titleEditBox.Focus();
+            titleEditBox.SelectAll();
         }
 
-        // ============================================================
-        // SAVE
-        // ============================================================
-
-        private void SaveButton_Click(
-            object? sender,
-            EventArgs e)
+        private void SaveButton_Click(object? sender, EventArgs e)
         {
-            string title =
-                titleEditBox.Text.Trim();
-
-            string content =
-                contentEditBox.Text.Trim();
+            string title = titleEditBox.Text.Trim();
+            string content = contentEditBox.Text.Trim();
 
             if (title.Length == 0)
             {
-                ShowError(
-                    "اكتب عنوان الملاحظة أولًا.");
-
+                ShowError("اكتب عنوان الملاحظة أولًا.");
                 titleEditBox.Focus();
                 return;
             }
 
             if (content.Length == 0)
             {
-                ShowError(
-                    "اكتب محتوى الملاحظة أولًا.");
-
+                ShowError("اكتب محتوى الملاحظة أولًا.");
                 contentEditBox.Focus();
                 return;
             }
 
-            try
-            {
-                OperationResult result;
+            OperationResult result;
+            string? category = string.IsNullOrWhiteSpace(categoryCombo.Text)
+                ? null
+                : categoryCombo.Text.Trim();
 
-                if (_selectedNoteId <= 0)
-                {
-                    result = _business.AddNote(
-                        title,
-                        content,
-                        categoryCombo.Text,
-                        importantCheckBox.Checked,
-                        pinnedCheckBox.Checked);
-                }
-                else
-                {
-                    result = _business.UpdateNote(
-                        _selectedNoteId,
-                        title,
-                        content,
-                        categoryCombo.Text,
-                        importantCheckBox.Checked,
-                        pinnedCheckBox.Checked);
-                }
-
-                if (!result.Succeeded)
-                {
-                    ShowError(result.Message);
-                    return;
-                }
-
-                _selectedNoteId = result.Id;
-
-                SetEditMode(false);
-                LoadAll();
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "حدث خطأ أثناء حفظ الملاحظة.",
-                    ex);
-            }
-        }
-
-        // ============================================================
-        // CANCEL
-        // ============================================================
-
-        private void CancelButton_Click(
-            object? sender,
-            EventArgs e)
-        {
             if (_selectedNoteId > 0)
             {
-                try
-                {
-                    var note =
-                        _business.GetNote(_selectedNoteId);
-
-                    if (note != null)
-                    {
-                        SetEditMode(false);
-                        DisplayNote(note);
-                        RefreshNotesList();
-                        return;
-                    }
-                }
-                catch
-                {
-                }
+                result = _business.UpdateNote(
+                    _selectedNoteId,
+                    title,
+                    content,
+                    category,
+                    importantCheckBox.Checked,
+                    pinnedCheckBox.Checked);
+            }
+            else
+            {
+                result = _business.AddNote(
+                    title,
+                    content,
+                    category,
+                    importantCheckBox.Checked,
+                    pinnedCheckBox.Checked);
             }
 
+            if (!result.Succeeded)
+            {
+                ShowError(result.Message);
+                return;
+            }
+
+            _selectedNoteId = result.Id;
             SetEditMode(false);
-            ClearSelection();
-            RefreshNotesList();
+            LoadData();
         }
 
-        // ============================================================
-        // DELETE
-        // ============================================================
-
-        private void DeleteButton_Click(
-            object? sender,
-            EventArgs e)
+        private void CancelButton_Click(object? sender, EventArgs e)
         {
-            if (_selectedNoteId <= 0)
-                return;
+            SetEditMode(false);
 
-            var confirm =
-                MessageBox.Show(
-                    this,
-                    "هل أنت متأكد من حذف هذه الملاحظة؟\r\nلا يمكن التراجع عن هذه العملية.",
-                    "حذف الملاحظة",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning,
-                    MessageBoxDefaultButton.Button2);
-
-            if (confirm != DialogResult.Yes)
-                return;
-
-            try
+            if (_selectedNoteId > 0)
             {
-                var result =
-                    _business.DeleteNote(_selectedNoteId);
-
-                if (!result.Succeeded)
-                {
-                    ShowError(result.Message);
-                    return;
-                }
-
-                _selectedNoteId = 0;
-
-                SetEditMode(false);
-                LoadAll();
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "حدث خطأ أثناء حذف الملاحظة.",
-                    ex);
-            }
-        }
-
-        // ============================================================
-        // PIN
-        // ============================================================
-
-        private void PinButton_Click(
-            object? sender,
-            EventArgs e)
-        {
-            if (_selectedNoteId <= 0)
-                return;
-
-            try
-            {
-                var result =
-                    _business.TogglePinned(_selectedNoteId);
-
-                if (!result.Succeeded)
-                {
-                    ShowError(result.Message);
-                    return;
-                }
-
-                LoadAll();
-            }
-            catch (Exception ex)
-            {
-                ShowError(
-                    "تعذر تغيير حالة التثبيت.",
-                    ex);
-            }
-        }
-
-        // ============================================================
-        // FILTER
-        // ============================================================
-
-        private void FilterButton_Click(
-            object? sender,
-            EventArgs e)
-        {
-            _activeFilter =
-                _activeFilter switch
-                {
-                    "All" => "Important",
-                    "Important" => "Pinned",
-                    _ => "All"
-                };
-
-            filterButton.Text =
-                _activeFilter switch
-                {
-                    "Important" => "المهمة",
-                    "Pinned" => "المثبتة",
-                    _ => "الكل"
-                };
-
-            _selectedNoteId = 0;
-
-            LoadNotes();
-        }
-
-        // ============================================================
-        // SEARCH
-        // ============================================================
-
-        private void SearchBox_TextChanged(
-            object? sender,
-            EventArgs e)
-        {
-            if (_loading)
-                return;
-
-            _selectedNoteId = 0;
-            LoadNotes();
-        }
-
-        // ============================================================
-        // MODE
-        // ============================================================
-
-        private void SetEditMode(bool enabled)
-        {
-            _editMode = enabled;
-
-            SuspendLayout();
-
-            try
-            {
-                displayContainer.Visible = !enabled;
-                editorContainer.Visible = enabled;
-
-                noteBadge.Visible = !enabled;
-                pinButton.Visible = !enabled;
-                editButton.Visible = !enabled;
-                deleteButton.Visible = !enabled;
-
-                if (enabled)
-                {
-                    detailHeaderLabel.Text =
-                        _selectedNoteId > 0
-                            ? "تعديل الملاحظة"
-                            : "إنشاء ملاحظة";
-
-                    editorContainer.BringToFront();
-
-                    titleEditBox.Focus();
-                }
+                NoteItem? note = FindVisibleNote(_selectedNoteId);
+                if (note != null)
+                    DisplayNote(note);
                 else
-                {
-                    detailHeaderLabel.Text =
-                        "تفاصيل الملاحظة";
-
-                    displayContainer.BringToFront();
-                }
+                    LoadData();
             }
-            finally
+            else
             {
-                ResumeLayout(true);
+                LoadData();
             }
+
+            RefreshActionButtons();
         }
 
-        // ============================================================
-        // HELPERS
-        // ============================================================
-
-        private static bool ContainsNote(
-            List<NoteItem> notes,
-            int id)
+        private void PinButton_Click(object? sender, EventArgs e)
         {
-            foreach (var note in notes)
+            if (_selectedNoteId <= 0)
+                return;
+
+            OperationResult result = _business.TogglePinned(_selectedNoteId);
+            if (!result.Succeeded)
+            {
+                ShowError(result.Message);
+                return;
+            }
+
+            LoadData();
+        }
+
+        private void DeleteButton_Click(object? sender, EventArgs e)
+        {
+            if (_selectedNoteId <= 0)
+                return;
+
+            DialogResult answer = MessageBox.Show(
+                this,
+                "هل تريد حذف الملاحظة المحددة؟\nلا يمكن التراجع عن هذه العملية.",
+                "تأكيد الحذف",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+
+            if (answer != DialogResult.Yes)
+                return;
+
+            OperationResult result = _business.DeleteNote(_selectedNoteId);
+            if (!result.Succeeded)
+            {
+                ShowError(result.Message);
+                return;
+            }
+
+            _selectedNoteId = 0;
+            LoadData();
+        }
+
+        private void SetEditMode(bool value)
+        {
+            _editMode = value;
+            displayContainer.Visible = !value;
+            editorContainer.Visible = value;
+            RefreshActionButtons();
+        }
+
+        private void RefreshActionButtons()
+        {
+            bool hasSelection = _selectedNoteId > 0 && !_editMode;
+            pinButton.Enabled = hasSelection;
+            editButton.Enabled = hasSelection;
+            deleteButton.Enabled = hasSelection;
+        }
+
+        private NoteItem? FindVisibleNote(int id)
+        {
+            foreach (NoteItem note in _visibleNotes)
             {
                 if (note.Id == id)
-                    return true;
+                    return note;
             }
-
-            return false;
+            return null;
         }
 
-        private static string NormalizeSearch(
-            string? value)
+        private static string NormalizeSearch(string? text)
         {
-            return value?.Trim() ?? string.Empty;
+            return string.IsNullOrWhiteSpace(text)
+                ? string.Empty
+                : text.Trim();
         }
 
-        private static string BuildPreview(
-            string? content)
+        private static string BuildPreview(string? text)
         {
-            string value =
-                (content ?? string.Empty)
-                .Replace("\r", " ")
-                .Replace("\n", " ")
-                .Trim();
+            if (string.IsNullOrWhiteSpace(text))
+                return "بدون محتوى";
 
-            if (value.Length == 0)
-                return "لا يوجد محتوى";
-
-            return value.Length > 86
-                ? value[..86] + "..."
-                : value;
+            string value = text.Replace("\r", " ").Replace("\n", " ").Trim();
+            return value.Length <= 88 ? value : value.Substring(0, 88) + "…";
         }
 
-        private static string FormatDate(
-            string? value)
-        {
-            if (DateTime.TryParse(
-                value,
-                out DateTime date))
-            {
-                return date.ToString(
-                    "yyyy/MM/dd HH:mm");
-            }
-
-            return value ?? string.Empty;
-        }
-
-        private static string GetNotesCountText(
-            int count)
+        private static string GetNotesCountText(int count)
         {
             return count switch
             {
@@ -909,191 +595,162 @@ namespace SOLVIX
             };
         }
 
-        private void ShowError(
-            string message)
+        private static string FormatDate(string? value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+                return "-";
+
+            if (DateTime.TryParse(value, out DateTime date))
+                return date.ToString("yyyy/MM/dd HH:mm");
+
+            return value;
+        }
+
+        private void ShowError(string message, Exception? ex = null)
+        {
+            string text = message;
+#if DEBUG
+            if (ex != null)
+                text += "\n\n" + ex.Message;
+#endif
             MessageBox.Show(
                 this,
-                message,
-                "SOLVIX",
+                text,
+                "الملاحظات",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
         }
 
-        private void ShowError(
-            string message,
-            Exception exception)
+        protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            MessageBox.Show(
-                this,
-                $"{message}\r\n\r\n{exception.Message}",
-                "SOLVIX",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
+            _searchTimer.Stop();
+            _searchTimer.Dispose();
+            base.OnFormClosed(e);
         }
 
-        // ============================================================
-        // DARK EDITOR CONTROLS
-        // ============================================================
-
-        private sealed class DarkRichTextBox : RichTextBox
+        internal sealed class DarkRichTextBox : RichTextBox
         {
             public DarkRichTextBox()
             {
                 BorderStyle = BorderStyle.None;
                 BackColor = Solvix.UI.AppTheme.SurfaceAlt;
                 ForeColor = Solvix.UI.AppTheme.Text;
-                ScrollBars = RichTextBoxScrollBars.Vertical;
+                Font = Solvix.UI.AppTheme.Regular(9.2F);
                 DetectUrls = false;
+                ScrollBars = RichTextBoxScrollBars.Vertical;
+                AcceptsTab = true;
+                Multiline = true;
                 WordWrap = true;
-                HideSelection = false;
-                Font = Solvix.UI.AppTheme.Regular(10F);
+                BorderStyle = BorderStyle.None;
                 RightToLeft = RightToLeft.Yes;
-
-                SetStyle(
-                    ControlStyles.OptimizedDoubleBuffer |
-                    ControlStyles.AllPaintingInWmPaint,
-                    true);
-            }
-
-            protected override void OnHandleCreated(EventArgs e)
-            {
-                base.OnHandleCreated(e);
-
-                BackColor =
-                    Solvix.UI.AppTheme.SurfaceAlt;
-
-                ForeColor =
-                    Solvix.UI.AppTheme.Text;
             }
         }
 
-        private sealed class DarkCheckBox : CheckBox
+        internal sealed class DarkCheckBox : CheckBox
         {
             public DarkCheckBox()
             {
-                Appearance = Appearance.Normal;
                 AutoSize = false;
+                Height = 34;
                 FlatStyle = FlatStyle.Flat;
+                FlatAppearance.BorderSize = 0;
                 BackColor = Color.Transparent;
                 ForeColor = Solvix.UI.AppTheme.Text;
-                Font = Solvix.UI.AppTheme.Regular(8.5F);
-
-                SetStyle(
-                    ControlStyles.UserPaint |
-                    ControlStyles.AllPaintingInWmPaint |
-                    ControlStyles.OptimizedDoubleBuffer |
-                    ControlStyles.ResizeRedraw,
-                    true);
-
-                Cursor = Cursors.Hand;
+                Font = Solvix.UI.AppTheme.Regular(8.7F);
+                RightToLeft = RightToLeft.Yes;
+                TextAlign = ContentAlignment.MiddleRight;
+                Padding = new Padding(0, 0, 8, 0);
             }
 
             protected override void OnPaint(PaintEventArgs e)
             {
-                e.Graphics.SmoothingMode =
-                    SmoothingMode.AntiAlias;
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.Clear(Parent?.BackColor ?? Solvix.UI.AppTheme.Background);
 
-                int boxSize = 18;
+                int size = 17;
+                int x = Width - size - 3;
+                int y = (Height - size) / 2;
+                Rectangle box = new Rectangle(x, y, size, size);
 
-                Rectangle box =
-                    RightToLeft == RightToLeft.Yes
-                        ? new Rectangle(
-                            Width - boxSize - 2,
-                            (Height - boxSize) / 2,
-                            boxSize,
-                            boxSize)
-                        : new Rectangle(
-                            2,
-                            (Height - boxSize) / 2,
-                            boxSize,
-                            boxSize);
+                using var fill = new SolidBrush(
+                    Checked ? Solvix.UI.AppTheme.Primary : Solvix.UI.AppTheme.SurfaceAlt);
+                using var pen = new Pen(
+                    Checked ? Solvix.UI.AppTheme.Primary : Solvix.UI.AppTheme.BorderStrong, 1);
 
-                using var back =
-                    new SolidBrush(
-                        Checked
-                            ? Solvix.UI.AppTheme.Primary
-                            : Solvix.UI.AppTheme.SurfaceAlt);
-
-                using var border =
-                    new Pen(
-                        Checked
-                            ? Solvix.UI.AppTheme.Primary
-                            : Solvix.UI.AppTheme.BorderStrong,
-                        1);
-
-                e.Graphics.FillRectangle(
-                    back,
-                    box);
-
-                e.Graphics.DrawRectangle(
-                    border,
-                    box);
+                e.Graphics.FillRectangle(fill, box);
+                e.Graphics.DrawRectangle(pen, box);
 
                 if (Checked)
                 {
-                    using var checkPen =
-                        new Pen(
-                            Color.White,
-                            2.2F);
+                    using var checkPen = new Pen(Color.White, 2.1F)
+                    {
+                        StartCap = LineCap.Round,
+                        EndCap = LineCap.Round,
+                        LineJoin = LineJoin.Round
+                    };
 
-                    checkPen.StartCap =
-                        LineCap.Round;
-
-                    checkPen.EndCap =
-                        LineCap.Round;
-
-                    Point p1 =
-                        new Point(
-                            box.Left + 4,
-                            box.Top + 9);
-
-                    Point p2 =
-                        new Point(
-                            box.Left + 8,
-                            box.Top + 13);
-
-                    Point p3 =
-                        new Point(
-                            box.Left + 15,
-                            box.Top + 5);
-
-                    e.Graphics.DrawLines(
-                        checkPen,
-                        new[]
-                        {
-                            p1,
-                            p2,
-                            p3
-                        });
+                    e.Graphics.DrawLines(checkPen, new[]
+                    {
+                        new Point(x + 4, y + 8),
+                        new Point(x + 7, y + 12),
+                        new Point(x + 14, y + 4)
+                    });
                 }
 
-                Rectangle textRect =
-                    RightToLeft == RightToLeft.Yes
-                        ? new Rectangle(
-                            0,
-                            0,
-                            Width - boxSize - 8,
-                            Height)
-                        : new Rectangle(
-                            boxSize + 8,
-                            0,
-                            Width - boxSize - 8,
-                            Height);
-
+                Rectangle textRect = new Rectangle(0, 0, x - 8, Height);
                 TextRenderer.DrawText(
                     e.Graphics,
-                    Text,
+                    Text ?? string.Empty,
                     Font,
                     textRect,
-                    ForeColor,
-                    RightToLeft == RightToLeft.Yes
-                        ? TextFormatFlags.Right |
-                          TextFormatFlags.VerticalCenter |
-                          TextFormatFlags.NoPrefix
-                        : TextFormatFlags.Left |
-                          TextFormatFlags.VerticalCenter |
-                          TextFormatFlags.NoPrefix);
+                    Enabled ? ForeColor : Solvix.UI.AppTheme.MutedText,
+                    TextFormatFlags.Right |
+                    TextFormatFlags.VerticalCenter |
+                    TextFormatFlags.EndEllipsis);
+            }
+        }
+
+        internal sealed class DarkComboBox : ComboBox
+        {
+            public DarkComboBox()
+            {
+                DrawMode = DrawMode.OwnerDrawFixed;
+                DrawItem += DrawItemHandler;
+                BackColor = Solvix.UI.AppTheme.SurfaceAlt;
+                ForeColor = Solvix.UI.AppTheme.Text;
+                FlatStyle = FlatStyle.Flat;
+                Font = Solvix.UI.AppTheme.Regular(8.8F);
+                ItemHeight = 30;
+                DropDownStyle = ComboBoxStyle.DropDown;
+                RightToLeft = RightToLeft.Yes;
+            }
+
+            private void DrawItemHandler(object? sender, DrawItemEventArgs e)
+            {
+                if (e.Index < 0)
+                {
+                    using var empty = new SolidBrush(BackColor);
+                    e.Graphics.FillRectangle(empty, e.Bounds);
+                    return;
+                }
+
+                bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+                Color background = selected
+                    ? Solvix.UI.AppTheme.CardSelected
+                    : Solvix.UI.AppTheme.SurfaceAlt;
+
+                using var brush = new SolidBrush(background);
+                e.Graphics.FillRectangle(brush, e.Bounds);
+
+                using var textBrush = new SolidBrush(ForeColor);
+                e.Graphics.DrawString(
+                    Items[e.Index]?.ToString() ?? string.Empty,
+                    Font,
+                    textBrush,
+                    new RectangleF(e.Bounds.X + 8, e.Bounds.Y + 5, e.Bounds.Width - 16, e.Bounds.Height - 10),
+                    new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center });
+
+                e.DrawFocusRectangle();
             }
         }
     }

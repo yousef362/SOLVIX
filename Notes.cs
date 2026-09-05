@@ -3,16 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace SOLVIX
 {
-    /*
-     * منطق فورم الملاحظات:
-     * يستقبل أوامر المستخدم مثل البحث والإضافة والتعديل والحذف والتثبيت.
-     * يرسل البيانات إلى Business Layer ولا يتعامل مباشرة مع SQLite.
-     * يعرض البيانات الراجعة في قائمة الملاحظات ومنطقة التفاصيل.
-     */
     public partial class Notes : Form
     {
         private readonly NotesBusinessLayer _business = new NotesBusinessLayer();
@@ -52,10 +45,10 @@ namespace SOLVIX
             try
             {
                 var stats = _business.GetStatistics();
-                totalCard.Value = stats.Total.ToString();
-                importantCard.Value = stats.Important.ToString();
-                pinnedCard.Value = stats.Pinned.ToString();
-                todayCard.Value = stats.Today.ToString();
+                totalValueLabel.Text = stats.Total.ToString();
+                importantValueLabel.Text = stats.Important.ToString();
+                pinnedValueLabel.Text = stats.Pinned.ToString();
+                todayValueLabel.Text = stats.Today.ToString();
             }
             catch (Exception ex)
             {
@@ -67,15 +60,12 @@ namespace SOLVIX
         {
             try
             {
-                List<NoteItem> notes = _business.GetNotes(
-                    searchBox.Text,
-                    _activeFilter);
+                List<NoteItem> notes = _business.GetNotes(searchBox.Text, _activeFilter);
 
                 notesScrollPanel.SuspendLayout();
                 notesScrollPanel.Controls.Clear();
 
                 int top = 12;
-
                 foreach (NoteItem note in notes)
                 {
                     Control card = CreateNoteCard(note);
@@ -93,8 +83,8 @@ namespace SOLVIX
                         Height = 100,
                         Location = new Point(12, 20),
                         Text = "لا توجد ملاحظات مطابقة.",
-                        ForeColor = Solvix.UI.AppTheme.MutedText,
-                        Font = Solvix.UI.AppTheme.Medium(10F),
+                        ForeColor = Color.Gray,
+                        Font = new Font("Segoe UI", 10F),
                         TextAlign = ContentAlignment.MiddleCenter,
                         RightToLeft = RightToLeft.Yes
                     };
@@ -107,7 +97,6 @@ namespace SOLVIX
                     if (_selectedNoteId > 0)
                     {
                         var selected = _business.GetNote(_selectedNoteId);
-
                         if (selected != null)
                             DisplayNote(selected);
                         else
@@ -132,20 +121,13 @@ namespace SOLVIX
         {
             bool selected = note.Id == _selectedNoteId;
 
-            var card = new Solvix.UI.RoundedPanel
+            var card = new Panel
             {
                 Width = Math.Max(320, notesScrollPanel.ClientSize.Width - 30),
                 Height = 112,
-                FillColor = selected
-                    ? Solvix.UI.AppTheme.CardSelected
-                    : Solvix.UI.AppTheme.Card,
-                BorderColor = selected
-                    ? Solvix.UI.AppTheme.Primary
-                    : Solvix.UI.AppTheme.Border,
-                BorderThickness = 1,
-                CornerRadius = 11,
+                BackColor = selected ? Color.LightSteelBlue : Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
                 Padding = new Padding(15),
-                RightToLeft = RightToLeft.Yes,
                 Cursor = Cursors.Hand
             };
 
@@ -153,9 +135,7 @@ namespace SOLVIX
             {
                 Dock = DockStyle.Right,
                 Width = 4,
-                BackColor = selected
-                    ? Solvix.UI.AppTheme.Primary
-                    : Color.FromArgb(55, 76, 103)
+                BackColor = selected ? Color.DodgerBlue : Color.LightGray
             };
 
             var title = new Label
@@ -163,11 +143,12 @@ namespace SOLVIX
                 Dock = DockStyle.Top,
                 Height = 28,
                 BackColor = Color.Transparent,
-                ForeColor = Solvix.UI.AppTheme.Text,
-                Font = Solvix.UI.AppTheme.Medium(10F),
+                ForeColor = Color.Black,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Text = note.Title,
                 TextAlign = ContentAlignment.MiddleRight,
-                RightToLeft = RightToLeft.Yes
+                RightToLeft = RightToLeft.Yes,
+                AutoEllipsis = true
             };
 
             var preview = new Label
@@ -175,11 +156,12 @@ namespace SOLVIX
                 Dock = DockStyle.Top,
                 Height = 34,
                 BackColor = Color.Transparent,
-                ForeColor = Solvix.UI.AppTheme.MutedText,
-                Font = Solvix.UI.AppTheme.Regular(8.5F),
+                ForeColor = Color.Gray,
+                Font = new Font("Segoe UI", 8.5F),
                 Text = BuildPreview(note.Content),
                 TextAlign = ContentAlignment.MiddleRight,
-                RightToLeft = RightToLeft.Yes
+                RightToLeft = RightToLeft.Yes,
+                AutoEllipsis = true
             };
 
             string meta = note.IsPinned ? "مثبت • " : "";
@@ -191,17 +173,15 @@ namespace SOLVIX
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.Transparent,
-                ForeColor = selected
-                    ? Solvix.UI.AppTheme.PrimaryHover
-                    : Solvix.UI.AppTheme.MutedText,
-                Font = Solvix.UI.AppTheme.Regular(8F),
+                ForeColor = selected ? Color.DodgerBlue : Color.Gray,
+                Font = new Font("Segoe UI", 8F),
                 Text = meta,
                 TextAlign = ContentAlignment.BottomRight,
-                RightToLeft = RightToLeft.Yes
+                RightToLeft = RightToLeft.Yes,
+                AutoEllipsis = true
             };
 
             void Select() => SelectNote(note.Id);
-
             card.Click += (_, _) => Select();
             title.Click += (_, _) => Select();
             preview.Click += (_, _) => Select();
@@ -211,7 +191,6 @@ namespace SOLVIX
             card.Controls.Add(footer);
             card.Controls.Add(preview);
             card.Controls.Add(title);
-
             return card;
         }
 
@@ -230,10 +209,7 @@ namespace SOLVIX
         {
             try
             {
-                List<NoteItem> notes = _business.GetNotes(
-                    searchBox.Text,
-                    _activeFilter);
-
+                List<NoteItem> notes = _business.GetNotes(searchBox.Text, _activeFilter);
                 notesScrollPanel.SuspendLayout();
                 notesScrollPanel.Controls.Clear();
 
@@ -257,22 +233,12 @@ namespace SOLVIX
         {
             detailTitleLabel.Text = note.Title;
             detailContentLabel.Text = note.Content;
-            detailDateLabel.Text =
-                $"{FormatDate(note.CreatedAt)} • آخر تحديث {FormatDate(note.UpdatedAt)}";
-
+            detailDateLabel.Text = $"{FormatDate(note.CreatedAt)} • آخر تحديث {FormatDate(note.UpdatedAt)}";
             categoryValue.Text = note.Category ?? "عام";
             createdValue.Text = FormatDate(note.CreatedAt);
             updatedValue.Text = FormatDate(note.UpdatedAt);
-
             noteBadge.Text = note.IsImportant ? "مهم" : "ملاحظة";
-            noteBadge.Style = note.IsImportant
-                ? Solvix.UI.BadgeStyle.Warning
-                : Solvix.UI.BadgeStyle.Primary;
-
             pinButton.Text = note.IsPinned ? "⚑" : "⚐";
-            pinButton.ForeColor = note.IsPinned
-                ? Solvix.UI.AppTheme.PrimaryHover
-                : Solvix.UI.AppTheme.MutedText;
         }
 
         private void AddNoteButton_Click(object? sender, EventArgs e)
@@ -284,7 +250,6 @@ namespace SOLVIX
             categoryCombo.Text = "";
             importantCheckBox.Checked = false;
             pinnedCheckBox.Checked = false;
-
             editorHeading.Text = "إضافة ملاحظة جديدة";
             SetEditMode(true);
             titleEditBox.Focus();
@@ -306,7 +271,6 @@ namespace SOLVIX
             categoryCombo.Text = note.Category ?? "";
             importantCheckBox.Checked = note.IsImportant;
             pinnedCheckBox.Checked = note.IsPinned;
-
             editorHeading.Text = "تعديل الملاحظة";
             SetEditMode(true);
             titleEditBox.Focus();
@@ -318,22 +282,11 @@ namespace SOLVIX
 
             if (_selectedNoteId == 0)
             {
-                result = _business.AddNote(
-                    titleEditBox.Text,
-                    contentEditBox.Text,
-                    categoryCombo.Text,
-                    importantCheckBox.Checked,
-                    pinnedCheckBox.Checked);
+                result = _business.AddNote(titleEditBox.Text, contentEditBox.Text, categoryCombo.Text, importantCheckBox.Checked, pinnedCheckBox.Checked);
             }
             else
             {
-                result = _business.UpdateNote(
-                    _selectedNoteId,
-                    titleEditBox.Text,
-                    contentEditBox.Text,
-                    categoryCombo.Text,
-                    importantCheckBox.Checked,
-                    pinnedCheckBox.Checked);
+                result = _business.UpdateNote(_selectedNoteId, titleEditBox.Text, contentEditBox.Text, categoryCombo.Text, importantCheckBox.Checked, pinnedCheckBox.Checked);
             }
 
             if (!result.Succeeded)
@@ -368,16 +321,10 @@ namespace SOLVIX
         {
             if (_selectedNoteId <= 0) return;
 
-            if (MessageBox.Show(
-                this,
-                "هل أنت متأكد من حذف الملاحظة؟",
-                "حذف الملاحظة",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning) != DialogResult.Yes)
+            if (MessageBox.Show(this, "هل أنت متأكد من حذف الملاحظة؟", "حذف الملاحظة", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
 
             var result = _business.DeleteNote(_selectedNoteId);
-
             if (!result.Succeeded)
             {
                 ShowError(result.Message);
@@ -394,7 +341,6 @@ namespace SOLVIX
             if (_selectedNoteId <= 0) return;
 
             var result = _business.TogglePinned(_selectedNoteId);
-
             if (!result.Succeeded)
             {
                 ShowError(result.Message);
@@ -423,10 +369,7 @@ namespace SOLVIX
             LoadNotes();
         }
 
-        private void SearchBox_TextChanged(object? sender, EventArgs e)
-        {
-            LoadNotes();
-        }
+        private void SearchBox_TextChanged(object? sender, EventArgs e) => LoadNotes();
 
         private void SetEditMode(bool enabled)
         {
@@ -443,12 +386,13 @@ namespace SOLVIX
         {
             _selectedNoteId = 0;
             detailTitleLabel.Text = "لا توجد ملاحظة";
-            detailContentLabel.Text =
-                "اختر ملاحظة من القائمة أو اضغط «إضافة ملاحظة».";
+            detailContentLabel.Text = "اختر ملاحظة من القائمة أو اضغط «إضافة ملاحظة».";
             detailDateLabel.Text = "";
             categoryValue.Text = "-";
             createdValue.Text = "-";
             updatedValue.Text = "-";
+            noteBadge.Text = "ملاحظة";
+            pinButton.Text = "⚐";
         }
 
         private static string BuildPreview(string text)
@@ -459,19 +403,12 @@ namespace SOLVIX
 
         private static string FormatDate(string value)
         {
-            return DateTime.TryParse(value, out DateTime date)
-                ? date.ToString("yyyy/MM/dd HH:mm")
-                : value;
+            return DateTime.TryParse(value, out DateTime date) ? date.ToString("yyyy/MM/dd HH:mm") : value;
         }
 
         private void ShowError(string message)
         {
-            MessageBox.Show(
-                this,
-                message,
-                "SOLVIX",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
+            MessageBox.Show(this, message, "SOLVIX", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
 }

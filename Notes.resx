@@ -117,14 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="noteContentLabel.Text" xml:space="preserve">
-    <value>تم عقد اجتماع مع فريق المشروع لمناقشة تقدم العمل في المرحلة الثانية.
-
-النقاط الرئيسية:
-• الانتهاء من تصميم قاعدة البيانات.
-• تطوير واجهة إدارة المستخدمين.
-• اختبار النظام بشكل كامل قبل التسليم.
-
-الموعد القادم يوم الأحد الساعة 11:00 ص.</value>
-  </data>
 </root>

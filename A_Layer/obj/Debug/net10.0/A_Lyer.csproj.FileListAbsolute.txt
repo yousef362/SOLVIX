@@ -1,0 +1,13 @@
+C:\SOLVIX\A_Layer\bin\Debug\net10.0\A_Lyer.deps.json
+C:\SOLVIX\A_Layer\bin\Debug\net10.0\A_Lyer.dll
+C:\SOLVIX\A_Layer\bin\Debug\net10.0\A_Lyer.pdb
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.csproj.AssemblyReference.cache
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.GeneratedMSBuildEditorConfig.editorconfig
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.AssemblyInfoInputs.cache
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.AssemblyInfo.cs
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.csproj.CoreCompileInputs.cache
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.sourcelink.json
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.dll
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\refint\A_Lyer.dll
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\A_Lyer.pdb
+C:\SOLVIX\A_Layer\obj\Debug\net10.0\ref\A_Lyer.dll

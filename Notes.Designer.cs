@@ -1,8 +1,4 @@
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace SOLVIX
+﻿namespace SOLVIX
 {
     partial class Notes
     {
@@ -19,14 +15,12 @@ namespace SOLVIX
         private void InitializeComponent()
         {
             SuspendLayout();
-            // 
-            // Notes
-            // 
-            ClientSize = new Size(2154, 1038);
-            Name = "Notes";
+         
             ResumeLayout(false);
         }
 
 
+        
+        
     }
 }
